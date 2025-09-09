@@ -1,10 +1,9 @@
-﻿using jh_payment_service.Models;
-
+﻿using jh_payment_service.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PaymentAPI.Services
+namespace jh_payment_service.Service
 {
     /// <summary>
     /// Provides services for managing refunds.

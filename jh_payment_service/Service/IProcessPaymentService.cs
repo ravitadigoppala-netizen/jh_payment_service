@@ -1,6 +1,6 @@
 ﻿
 
-using jh_payment_service.Model.Payments;
+using jh_payment_service.Model.Entity;
 
 namespace jh_payment_service.Service
 {
@@ -13,12 +13,12 @@ namespace jh_payment_service.Service
         /// Credits the user's account with the specified transaction details.
         /// </summary>
         /// <param name="transaction"></param>
-        void CreditUserAccount(Transaction transaction);
+        Task CreditUserAccount(Transaction transaction);
 
         /// <summary>
         /// Debits the user's account with the specified transaction details.
         /// </summary>
         /// <param name="transaction"></param>
-        void DebitUserAccount(Transaction transaction);
+        Task DebitUserAccount(Transaction transaction);
     }
 }

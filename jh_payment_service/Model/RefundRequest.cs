@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace jh_payment_service.Models
+namespace jh_payment_service.Model
 {
     /// <summary>
     /// Represents a refund request for a payment transaction.
