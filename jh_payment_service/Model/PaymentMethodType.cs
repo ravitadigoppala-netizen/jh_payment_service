@@ -1,5 +1,8 @@
 ﻿namespace jh_payment_service.Model
 {
+    /// <summary>
+    /// This enum represents different types of payment methods.
+    /// </summary>
     public enum PaymentMethodType
     {
         Card = 1,
