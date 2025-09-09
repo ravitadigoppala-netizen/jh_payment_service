@@ -1,3 +1,4 @@
+using jh_payment_service.Model;
 using Microsoft.AspNetCore.Mvc;
 
 namespace jh_payment_service.Controllers
@@ -28,6 +29,13 @@ namespace jh_payment_service.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpGet("healthCheck")]
+        public ResponseModel healthCheck()
+        {
+            var paymentResponse = new PaymentResponse();
+            return ResponseModel.Ok(paymentResponse, "Working");
         }
     }
 }
