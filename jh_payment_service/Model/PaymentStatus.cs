@@ -1,5 +1,8 @@
 ﻿namespace jh_payment_service.Model
 {
+    /// <summary>
+    /// This enum represents the various statuses a payment can have.
+    /// </summary>
     public enum PaymentStatus
     {
         Pending = 1,
