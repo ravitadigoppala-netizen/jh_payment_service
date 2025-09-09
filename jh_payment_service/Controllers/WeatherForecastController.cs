@@ -34,7 +34,8 @@ namespace jh_payment_service.Controllers
         [HttpGet("healthCheck")]
         public ResponseModel healthCheck()
         {
-            return ResponseModel.Ok("Working");
+            var paymentResponse = new PaymentResponse();
+            return ResponseModel.Ok(paymentResponse, "Working");
         }
     }
 }
