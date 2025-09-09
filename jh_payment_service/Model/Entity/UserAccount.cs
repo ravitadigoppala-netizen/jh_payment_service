@@ -1,4 +1,6 @@
-﻿namespace jh_payment_service.Model.UserEntity
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace jh_payment_service.Model.Entity
 {
     /// <summary>
     /// This class represents a user account in the payment service.
@@ -8,7 +10,7 @@
         /// <summary>
         /// Represents the unique identifier for the user.
         /// </summary>
-        public Guid UserId { get; set; } = Guid.NewGuid();
+        public long UserId { get; set; }
 
         /// <summary>
         /// Represents the full name of the user.

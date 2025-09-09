@@ -10,12 +10,12 @@ namespace jh_payment_service.Model
         /// <summary>
         /// Represents the unique identifier of the user sending the payment.
         /// </summary>
-        public Guid SenderUserId { get; set; }
+        public long SenderUserId { get; set; }
 
         /// <summary>
         /// Represents the unique identifier of the user receiving the payment.
         /// </summary>
-        public Guid ReceiverUserId { get; set; }
+        public long ReceiverUserId { get; set; }
 
         /// <summary>
         /// Represents the amount to be paid.

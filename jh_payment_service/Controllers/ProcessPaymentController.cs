@@ -1,14 +1,14 @@
 ﻿using jh_payment_service.Model;
-using jh_payment_service.Model.Payments;
+using jh_payment_service.Model.Entity;
 using jh_payment_service.Service;
 using jh_payment_service.Validators;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace jh_payment_service.Controllers
 {
-    [Route("api/v1/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/payment/[controller]")]
     public class ProcessPaymentController : ControllerBase
     {
         private readonly ILogger<ProcessPaymentController> _logger;
@@ -44,8 +44,6 @@ namespace jh_payment_service.Controllers
                     FromUserId = paymentRequest.SenderUserId,
                     ToUserId = paymentRequest.ReceiverUserId,
                     Amount = paymentRequest.Amount,
-                    PaymentMethod = paymentRequest.PaymentMethod,
-                    Status = PaymentStatus.Pending,
                     CreatedAt = DateTime.UtcNow,
                     Type = TransactionType.Credit
                 };
@@ -84,8 +82,6 @@ namespace jh_payment_service.Controllers
                     FromUserId = paymentRequest.SenderUserId,
                     ToUserId = paymentRequest.ReceiverUserId,
                     Amount = paymentRequest.Amount,
-                    PaymentMethod = paymentRequest.PaymentMethod,
-                    Status = PaymentStatus.Pending,
                     CreatedAt = DateTime.UtcNow,
                     Type = TransactionType.Debit
                 };

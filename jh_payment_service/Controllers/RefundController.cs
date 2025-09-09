@@ -1,9 +1,9 @@
-﻿using jh_payment_service.Models;
+﻿using jh_payment_service.Model;
+using jh_payment_service.Service;
 using Microsoft.AspNetCore.Mvc;
-using PaymentAPI.Services;
 using System.Collections.Generic;
 
-namespace PaymentAPI.Controllers
+namespace jh_payment_service.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

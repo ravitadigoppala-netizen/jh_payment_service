@@ -17,7 +17,7 @@ namespace jh_payment_service.Validators
             // Basic validation logic
             if (paymentRequest.Amount <= 0)
                 return false;
-            if (paymentRequest.SenderUserId == Guid.Empty || paymentRequest.ReceiverUserId == Guid.Empty)
+            if (paymentRequest.SenderUserId == 0 || paymentRequest.ReceiverUserId == 0)
                 return false;
             if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
                 return false;
