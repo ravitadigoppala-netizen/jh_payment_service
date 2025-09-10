@@ -19,74 +19,85 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Credit the user's account
         /// </summary>
-        /// <param name="transaction"></param>
-        public async Task CreditUserAccount(Transaction transaction)
+        /// <param name="PaymentRequest"></param>
+        public async Task<ResponseModel> CreditUserAccount(PaymentRequest paymentRequest)
         {
             // Logic to credit the user's account
-            _logger.LogInformation($"Crediting {transaction.Amount} to user {transaction.ToUserId}");
-            var user = await GetUserData();
+            _logger.LogInformation($"Crediting {paymentRequest.Amount} to user {paymentRequest.SenderUserId}");
+
+            if (paymentRequest.Amount <= 0)
+            {
+                _logger.LogError("Invalid transaction amount");
+                return ResponseModel.BadRequest("Invalid transaction amount");
+            }
+
+            var user = await GetUserData(paymentRequest.SenderUserId);
             if (user != null)
             {
-                if (transaction.Amount <= 0)
+                var response = await CreditFund(paymentRequest);
+                if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    _logger.LogError("Invalid transaction amount");
-                    return;
+                    _logger.LogInformation($"Credited balance for user {user.UserId}");
                 }
-
-                user.Balance += transaction.Amount;
-                _logger.LogInformation($"New balance for user {user.UserId} is {user.Balance}");
+                else
+                {
+                    _logger.LogError("Failed to credit user's account");
+                    return ResponseModel.InternalServerError("Failed to credit user's account");
+                }
             }
             else
             {
                 _logger.LogError("User not found");
-                return;
+                return ResponseModel.BadRequest("User not found");
             }
             // Simulate success
             _logger.LogInformation("Transaction completed successfully");
+            return ResponseModel.Ok(paymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
         /// Debit the user's account
         /// </summary>
-        /// <param name="transaction"></param>
-        public async Task DebitUserAccount(Transaction transaction)
+        /// <param name="PaymentRequest"></param>
+        public async Task<ResponseModel> DebitUserAccount(PaymentRequest paymentRequest)
         {
             // Logic to debit the user's account
-            _logger.LogInformation($"Debiting {transaction.Amount} from user {transaction.FromUserId}");
-            var user = await GetUserData();
+            _logger.LogInformation($"Debiting {paymentRequest.Amount} from user {paymentRequest.SenderUserId}");
+            var user = await GetUserData(paymentRequest.SenderUserId);
             if (user != null)
             {
-                if (user.Balance < transaction.Amount)
+                var account = await GetUserAccount(paymentRequest.SenderUserId);
+                if (account == null)
                 {
-                    _logger.LogError("Insufficient balance to process transaction");
-                    return;
+                    _logger.LogError("User account not found");
+                    return ResponseModel.BadRequest("User account not found");
                 }
 
-                user.Balance -= transaction.Amount;
-                _logger.LogInformation($"New balance for user {user.UserId} is {user.Balance}");
+                if (account.Balance < paymentRequest.Amount)
+                {
+                    _logger.LogError("Insufficient balance to process transaction");
+                    return ResponseModel.BadRequest("Insufficient balance to process transaction");
+                }
+
+                var response = await DebitFund(paymentRequest);
+                if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    _logger.LogInformation($"Debited balance for user {user.UserId}");
+                }
+                else
+                {
+                    _logger.LogError("Failed to debit user's account");
+                    return ResponseModel.InternalServerError("Failed to debit user's account");
+                }                
             }
             else
             {
                 _logger.LogError("User not found");
-                return;
+                return ResponseModel.BadRequest("User not found");
             }
             // Simulate success
             _logger.LogInformation("Transaction completed successfully");
-        }
-
-        private async Task<UserAccount> GetUserData()
-        {
-            var user = await _httpClientService.GetAsync<User>("v1/perops/user/getuser/1");
-            // var response = await _httpClientService.PostAsync<User, string>("v1/perops/user/adduser", new User() { });
-
-            return await Task.FromResult(new UserAccount
-            {
-                UserId = 1,
-                FullName = "John Doe",
-                Email = "john@abc.com",
-                Balance = 1000,
-                MobileNumber = "1234567890"
-            });
+            return ResponseModel.Ok(paymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
@@ -106,6 +117,80 @@ namespace jh_payment_service.Service
             }
 
             return ResponseModel.Ok(userAccount, "Your account balance");
+        }
+
+        /// <summary>
+        /// Get user data from DB
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task<User> GetUserData(long userId)
+        {
+            try
+            {
+                return await _httpClientService.GetAsync<User>("v1/perops/user/getuser/" + userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "User not found");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Credit fund to user account
+        /// </summary>
+        /// <param name="paymentRequest"></param>
+        /// <returns></returns>
+        private async Task<ResponseModel> CreditFund(PaymentRequest paymentRequest)
+        {
+            try
+            {
+                return await _httpClientService.PostAsync<PaymentRequest, ResponseModel>("v1/perops/Payment/credit", paymentRequest);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to credit");
+            }
+            return null;
+            
+        }
+
+        /// <summary>
+        /// Debit fund from user account
+        /// </summary>
+        /// <param name="paymentRequest"></param>
+        /// <returns></returns>
+        private async Task<ResponseModel> DebitFund(PaymentRequest paymentRequest)
+        {
+            try
+            {
+                return await _httpClientService.PutAsync<PaymentRequest, ResponseModel>("v1/perops/Payment/debit/"+paymentRequest.SenderUserId, paymentRequest);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to debit");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get user account details from DB
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task<UserAccount> GetUserAccount(long userId)
+        {
+            try
+            {
+                return await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get user account");
+            }
+            return null;
+                       
         }
     }
 }

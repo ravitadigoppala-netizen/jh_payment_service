@@ -11,16 +11,16 @@ namespace jh_payment_service.Service
     public interface IProcessPaymentService
     {
         /// <summary>
-        /// Credits the user's account with the specified transaction details.
+        /// Credits the user's account with the specified paymentRequest details.
         /// </summary>
-        /// <param name="transaction"></param>
-        Task CreditUserAccount(Transaction transaction);
+        /// <param name="paymentRequest"></param>
+        Task<ResponseModel> CreditUserAccount(PaymentRequest paymentRequest);
 
         /// <summary>
-        /// Debits the user's account with the specified transaction details.
+        /// Debits the user's account with the specified paymentRequest details.
         /// </summary>
-        /// <param name="transaction"></param>
-        Task DebitUserAccount(Transaction transaction);
+        /// <param name="paymentRequest"></param>
+        Task<ResponseModel> DebitUserAccount(PaymentRequest paymentRequest);
 
         /// <summary>
         /// GetAccountBalance
