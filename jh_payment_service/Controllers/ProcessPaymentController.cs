@@ -13,13 +13,12 @@ namespace jh_payment_service.Controllers
     {
         private readonly ILogger<ProcessPaymentController> _logger;
         private readonly IProcessPaymentService _processPaymentService;
-        private readonly IValidator _validator;
+        
         public ProcessPaymentController(ILogger<ProcessPaymentController> logger,
-            IProcessPaymentService processPaymentService, IValidator validator)
+            IProcessPaymentService processPaymentService)
         {
             _logger = logger;
             _processPaymentService = processPaymentService;
-            _validator = validator;
         }
 
         /// <summary>
@@ -32,12 +31,6 @@ namespace jh_payment_service.Controllers
         {
             try
             {
-                if (!_validator.ValidatePaymentRequest(paymentRequest))
-                {
-                    _logger.LogError("Invalid payment request");
-                    return BadRequest(ResponseModel.BadRequest("Invalid payment request"));
-                }
-
                 var response = await _processPaymentService.CreditUserAccount(paymentRequest);
                 return StatusCode((int)response.StatusCode, response);
             }
@@ -59,12 +52,7 @@ namespace jh_payment_service.Controllers
             try
             {
                 _logger.LogInformation("Debit payment request received");
-                if (!_validator.ValidatePaymentRequest(paymentRequest))
-                {
-                    _logger.LogError("Invalid payment request");
-                    return BadRequest(ResponseModel.BadRequest("Invalid payment request"));
-                }
-
+                
                 var response = await _processPaymentService.DebitUserAccount(paymentRequest);
                 return StatusCode((int)response.StatusCode, response);
             }

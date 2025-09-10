@@ -1,5 +1,7 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
+using jh_payment_service.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace jh_payment_service.Service
 {
@@ -10,10 +12,13 @@ namespace jh_payment_service.Service
     {
         private readonly ILogger<ProcessPaymentService> _logger;
         private readonly IHttpClientService _httpClientService;
-        public ProcessPaymentService(ILogger<ProcessPaymentService> logger, IHttpClientService httpClientService)
+        private readonly IValidator _validator;
+        public ProcessPaymentService(ILogger<ProcessPaymentService> logger, IHttpClientService httpClientService,
+            IValidator validator)
         {
             _logger = logger;
             _httpClientService = httpClientService;
+            _validator = validator;
         }
 
         /// <summary>
@@ -24,11 +29,11 @@ namespace jh_payment_service.Service
         {
             // Logic to credit the user's account
             _logger.LogInformation($"Crediting {paymentRequest.Amount} to user {paymentRequest.SenderUserId}");
-
-            if (paymentRequest.Amount <= 0)
+            string errorMessage;
+            if (!_validator.ValidatePaymentRequest(paymentRequest, out errorMessage))
             {
-                _logger.LogError("Invalid transaction amount");
-                return ResponseModel.BadRequest("Invalid transaction amount");
+                _logger.LogError("Invalid payment request: "+ errorMessage);
+                return ResponseModel.BadRequest("Invalid payment request: "+ errorMessage);
             }
 
             var user = await GetUserData(paymentRequest.SenderUserId);
@@ -63,6 +68,14 @@ namespace jh_payment_service.Service
         {
             // Logic to debit the user's account
             _logger.LogInformation($"Debiting {paymentRequest.Amount} from user {paymentRequest.SenderUserId}");
+
+            string errorMessage;
+            if (!_validator.ValidatePaymentRequest(paymentRequest, out errorMessage))
+            {
+                _logger.LogError("Invalid payment request: " + errorMessage);
+                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
+            }
+
             var user = await GetUserData(paymentRequest.SenderUserId);
             if (user != null)
             {
