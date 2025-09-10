@@ -1,7 +1,7 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Service;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace jh_payment_service.Controllers
 {
@@ -17,40 +17,41 @@ namespace jh_payment_service.Controllers
         }
 
         /// <summary>
-        /// Creates a refund for a given transaction.
+        /// Process a new refund request for a user and transaction.
         /// </summary>
-        /// <param name="request">Refund request details.</param>
-        /// <returns>Details of the processed refund.</returns>
-        [HttpPost]
-        public ActionResult<RefundResponse> CreateRefund([FromBody] RefundRequest request)
+        [HttpPost("refund")]
+        public async Task<IActionResult> ProcessRefund(
+           [FromBody] RefundRequest request)
         {
-            var refund = _refundService.ProcessRefund(request);
-            return Ok(refund);
+            if (request == null)
+                return BadRequest("Invalid refund request");
+
+            var refundResponse = await _refundService.ProcessRefund();
+            return Ok(refundResponse);
         }
 
         /// <summary>
-        /// Retrieves all refunds.
+        /// Get all refund transactions for a user and transaction.
         /// </summary>
-        /// <returns>List of refund responses.</returns>
-        [HttpGet]
-        public ActionResult<IEnumerable<RefundResponse>> GetRefunds()
+        [HttpGet("refunds/{version}/{userId}/{transactionId}")]
+        public async Task<IActionResult> GetRefunds(string version, int userId, int transactionId)
         {
-            return Ok(_refundService.GetRefunds());
+            var refundList = await _refundService.GetRefunds(version, userId, transactionId);
+            return Ok(refundList);
         }
 
         /// <summary>
-        /// Retrieves details of a refund by refund ID.
+        /// Get refund details for a specific user and transaction.
         /// </summary>
-        /// <param name="id">The refund identifier.</param>
-        /// <returns>Refund details if found, otherwise NotFound.</returns>
-        [HttpGet("{id}")]
-        public ActionResult<RefundResponse> GetRefundById(string id)
+        [HttpGet("refund/{version}/{userId}/{transactionId}")]
+        public async Task<IActionResult> GetRefundById(string version, int userId, int transactionId)
         {
-            var refund = _refundService.GetRefundById(id);
-            if (refund == null)
-                return NotFound();
+            var refundResponse = await _refundService.GetRefundById(version, userId, transactionId);
 
-            return Ok(refund);
+            if (refundResponse == null)
+                return NotFound("Refund not found");
+
+            return Ok(refundResponse);
         }
     }
 }
