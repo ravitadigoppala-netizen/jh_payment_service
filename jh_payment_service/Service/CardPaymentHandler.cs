@@ -23,19 +23,34 @@ namespace jh_payment_service.Service
         /// <returns></returns>
         public async Task<ResponseModel> InitiatePaymentAsync(PaymentRequest request)
         {
-            var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
-            var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
+            try
+            {
+                var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
+            }
+            catch
+            {
+                return ErrorResponseModel.Fail("User not found", "AUTH001");
+            }
 
-            if (sender == null || receiver == null)
-                return ResponseModel.BadRequest("User not found");
+
+            try
+            {
+                var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
+            }
+            catch
+            {
+                return ErrorResponseModel.Fail("User not found", "AUTH001");
+            }
+
 
             var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
             var receiverAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.ReceiverUserId}");
 
             if (senderAccount.Balance < request.Amount)
-                return ResponseModel.BadRequest("Insufficient balance");
+                return ErrorResponseModel.Fail("Insufficient balance", "AUTH001");
 
-            var response = await _httpClientService.PutAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest {
+            var response = await _httpClientService.PutAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
+            {
                 SenderUserId = request.SenderUserId,
                 ReceiverUserId = request.ReceiverUserId,
                 Amount = request.Amount,
