@@ -1,4 +1,5 @@
-﻿using jh_payment_service.Model.Entity;
+﻿using jh_payment_service.Model;
+using jh_payment_service.Model.Entity;
 
 namespace jh_payment_service.Service
 {
@@ -86,6 +87,25 @@ namespace jh_payment_service.Service
                 Balance = 1000,
                 MobileNumber = "1234567890"
             });
+        }
+
+        /// <summary>
+        /// GetAccountBalance method to check user account balance
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ResponseModel> GetAccountBalance(long userId)
+        {
+            var userAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
+            // var response = await _httpClientService.PostAsync<User, string>($"v1/perops/user/adduser", new User { });
+
+            if (userAccount == null)
+            {
+                throw new Exception("Fail to get user account detail");
+            }
+
+            return ResponseModel.Ok(userAccount, "Your account balance");
         }
     }
 }

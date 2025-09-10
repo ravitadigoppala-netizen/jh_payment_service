@@ -28,7 +28,7 @@ namespace jh_payment_service.Controllers
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
         [HttpPost("credit-payment")]
-        public ResponseModel CreditPayment([FromBody]PaymentRequest paymentRequest)
+        public ResponseModel CreditPayment([FromBody] PaymentRequest paymentRequest)
         {
             try
             {
@@ -95,6 +95,18 @@ namespace jh_payment_service.Controllers
                 _logger.LogError(ex, "Error processing debit payment");
                 return ResponseModel.InternalServerError("An error occured while processing debit payment");
             }
+        }
+
+        /// <summary>
+        /// This endpoint processes a debit payment request.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpPost("check-balance/{userId}")]
+        public async Task<ResponseModel> CheckBalance([FromRoute] long userId)
+        {
+            _logger.LogInformation("Debit payment request received");
+            return await _processPaymentService.GetAccountBalance(userId);
         }
     }
 }
