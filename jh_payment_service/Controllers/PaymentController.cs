@@ -1,4 +1,5 @@
 ﻿using jh_payment_service.Model;
+using jh_payment_service.Model.Payments;
 using jh_payment_service.Service;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,8 +22,8 @@ namespace jh_payment_service.Controllers
         /// <summary>
         ///Provides API endpoints for payment related operations, such as initiate payment.
         /// </summary>
-        [HttpPost("initiate")]
-        public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequest request)
+        [HttpPost("wallet/transfer/initiate")]
+        public async Task<IActionResult> InitiatePayment([FromBody] InitialPaymentModel request)
         {
             try
             {

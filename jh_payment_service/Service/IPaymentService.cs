@@ -1,4 +1,5 @@
 ﻿using jh_payment_service.Model;
+using jh_payment_service.Model.Payments;
 
 namespace jh_payment_service.Service
 {
@@ -12,6 +13,6 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<ResponseModel> ProcessPaymentAsync(PaymentRequest request);
+        Task<ResponseModel> ProcessPaymentAsync(InitialPaymentModel request);
     }
 }
