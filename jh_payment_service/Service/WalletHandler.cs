@@ -24,20 +24,16 @@ namespace jh_payment_service.Service
         /// <returns></returns>
         public async Task<ResponseModel> InitiatePaymentAsync(PaymentRequest request)
         {
-            try
-            {
-                var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
-            }
-            catch
+            var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
+
+            if (sender == null)
             {
                 return ErrorResponseModel.Fail($"User with id: {request.SenderUserId} not found", "AUTH001");
             }
 
-            try
-            {
-                var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
-            }
-            catch
+
+            var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
+            if (sender == null)
             {
                 return ErrorResponseModel.Fail("User not found", "AUTH001");
             }
