@@ -12,6 +12,6 @@ namespace jh_payment_service.Validators
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        bool ValidatePaymentRequest(PaymentRequest paymentRequest);
+        bool ValidatePaymentRequest(PaymentRequest paymentRequest, out string errorMessage);
     }
 }
