@@ -98,7 +98,9 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> GetAccountBalance(long userId)
         {
             var userAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
-            if(userAccount == null)
+            // var response = await _httpClientService.PostAsync<User, string>($"v1/perops/user/adduser", new User { });
+
+            if (userAccount == null)
             {
                 throw new Exception("Fail to get user account detail");
             }
