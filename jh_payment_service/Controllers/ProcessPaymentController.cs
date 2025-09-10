@@ -28,34 +28,23 @@ namespace jh_payment_service.Controllers
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
         [HttpPost("credit-payment")]
-        public ResponseModel CreditPayment([FromBody] PaymentRequest paymentRequest)
+        public async Task<IActionResult> CreditPayment([FromBody] PaymentRequest paymentRequest)
         {
             try
             {
                 if (!_validator.ValidatePaymentRequest(paymentRequest))
                 {
                     _logger.LogError("Invalid payment request");
-                    return ResponseModel.BadRequest("Invalid payment request");
+                    return BadRequest(ResponseModel.BadRequest("Invalid payment request"));
                 }
 
-                var transaction = new Transaction
-                {
-                    TransactionId = Guid.NewGuid(),
-                    FromUserId = paymentRequest.SenderUserId,
-                    ToUserId = paymentRequest.ReceiverUserId,
-                    Amount = paymentRequest.Amount,
-                    CreatedAt = DateTime.UtcNow,
-                    Type = TransactionType.Credit
-                };
-
-                _processPaymentService.CreditUserAccount(transaction);
-                _logger.LogInformation($"Credit Payment processed successfully for transaction {transaction.TransactionId}");
-                return ResponseModel.Ok(transaction, "Credit Payment processed successfully");
+                var response = await _processPaymentService.CreditUserAccount(paymentRequest);
+                return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing credit payment");
-                return ResponseModel.InternalServerError("An error occured while processing credit payment");
+                return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing credit payment"));
             }
         }
 
@@ -65,7 +54,7 @@ namespace jh_payment_service.Controllers
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
         [HttpPost("debit-payment")]
-        public ResponseModel DebitPayment([FromBody] PaymentRequest paymentRequest)
+        public async Task<IActionResult> DebitPayment([FromBody] PaymentRequest paymentRequest)
         {
             try
             {
@@ -73,27 +62,16 @@ namespace jh_payment_service.Controllers
                 if (!_validator.ValidatePaymentRequest(paymentRequest))
                 {
                     _logger.LogError("Invalid payment request");
-                    return ResponseModel.BadRequest("Invalid payment request");
+                    return BadRequest(ResponseModel.BadRequest("Invalid payment request"));
                 }
 
-                var transaction = new Transaction
-                {
-                    TransactionId = Guid.NewGuid(),
-                    FromUserId = paymentRequest.SenderUserId,
-                    ToUserId = paymentRequest.ReceiverUserId,
-                    Amount = paymentRequest.Amount,
-                    CreatedAt = DateTime.UtcNow,
-                    Type = TransactionType.Debit
-                };
-
-                _processPaymentService.DebitUserAccount(transaction);
-                _logger.LogInformation($"Debit Payment processed successfully for transaction {transaction.TransactionId}");
-                return ResponseModel.Ok(transaction, "Debit Payment processed successfully");
+                var response = await _processPaymentService.DebitUserAccount(paymentRequest);
+                return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing debit payment");
-                return ResponseModel.InternalServerError("An error occured while processing debit payment");
+                return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing debit payment"));
             }
         }
 
