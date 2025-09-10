@@ -1,5 +1,6 @@
 ﻿
 
+using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
 
 namespace jh_payment_service.Service
@@ -20,5 +21,11 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="transaction"></param>
         Task DebitUserAccount(Transaction transaction);
+
+        /// <summary>
+        /// GetAccountBalance
+        /// </summary>
+        /// <param name="userId"></param>
+        Task<ResponseModel> GetAccountBalance(long userId);
     }
 }
