@@ -2,6 +2,7 @@ using jh_payment_service.Service;
 using jh_payment_service.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using jh_payment_service.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,26 @@ builder.Services.AddApiVersioning(options =>
         new HeaderApiVersionReader("X-Version"),          // Header: X-Version: 1.0
         new MediaTypeApiVersionReader("ver"));            // Header: Content-Type: application/json;ver=1.0
 });
+
+// Register payment handlers
+builder.Services.AddSingleton<CardPaymentHandler>();
+builder.Services.AddSingleton<UPIPaymentHandler>();
+builder.Services.AddSingleton<NetBankingHandler>();
+builder.Services.AddSingleton<WalletHandler>();
+
+builder.Services.AddSingleton<IPaymentService>(provider =>
+{
+    var handlers = new Dictionary<PaymentMethodType, IPaymentHandler>
+    {
+        { PaymentMethodType.Card, provider.GetRequiredService<CardPaymentHandler>() },
+        { PaymentMethodType.UPI, provider.GetRequiredService<UPIPaymentHandler>() },
+        { PaymentMethodType.NetBanking, provider.GetRequiredService<NetBankingHandler>() },
+        { PaymentMethodType.Wallet, provider.GetRequiredService<WalletHandler>() }
+    };
+
+    return new PaymentService(handlers);
+});
+
 
 var app = builder.Build();
 
