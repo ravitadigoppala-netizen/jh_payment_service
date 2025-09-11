@@ -1,8 +1,7 @@
-
 using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
-using System.Reflection;
-using System.Transactions;
+using jh_payment_service.Model.Payments;
+using jh_payment_service.Validators;
 
 namespace jh_payment_service.Service
 {
@@ -12,52 +11,66 @@ namespace jh_payment_service.Service
     public class CardPaymentHandler : IPaymentHandler
     {
         private readonly IHttpClientService _httpClientService;
-        public CardPaymentHandler(IHttpClientService httpClientService)
+        private readonly ILogger<CardPaymentHandler> _logger;
+        private readonly IPaymentValidator _validator;
+        public CardPaymentHandler(IHttpClientService httpClientService, ILogger<CardPaymentHandler> logger, IPaymentValidator paymentValidator)
         {
             _httpClientService = httpClientService;
+            _logger = logger;
+            _validator = paymentValidator;
         }
         /// <summary>
         /// payment Initiate process, including validation.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<ResponseModel> InitiatePaymentAsync(PaymentRequest request)
+        public async Task<ResponseModel> InitiatePaymentAsync(InitialPaymentModel request)
         {
-            try
+            string errorMessage;
+            if (!_validator.ValidatePaymentRequest(request, out errorMessage))
             {
-                var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
+                _logger.LogError("Invalid payment request: " + errorMessage);
+                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
-            catch
+            var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
+
+            if (sender == null)
             {
-                return ErrorResponseModel.Fail("User not found", "AUTH001");
+                return ErrorResponseModel.Fail($"Sender with id: {request.SenderUserId} not found", "NOTIF001 ");
             }
 
-
-            try
+            var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
+            if (receiver == null)
             {
-                var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
+                return ErrorResponseModel.Fail($"Receiver with id: {request.ReceiverUserId} not found", "NOTIF001 ");
             }
-            catch
-            {
-                return ErrorResponseModel.Fail("User not found", "AUTH001");
-            }
-
 
             var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
             var receiverAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.ReceiverUserId}");
 
             if (senderAccount.Balance < request.Amount)
-                return ErrorResponseModel.Fail("Insufficient balance", "AUTH001");
+            {
+                return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
+            }
 
             var response = await _httpClientService.PutAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
             {
                 SenderUserId = request.SenderUserId,
                 ReceiverUserId = request.ReceiverUserId,
                 Amount = request.Amount,
-                PaymentMethod = request.PaymentMethod
             });
 
-            return ResponseModel.Ok(response, "Card payment processed");
+            if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                _logger.LogInformation($"Credited balance for user {request.ReceiverUserId}");
+            }
+            else
+            {
+                _logger.LogError("Failed to credit user's account");
+                return ResponseModel.InternalServerError("Failed to credit user's account");
+            }
+
+            return ResponseModel.Ok(request, "Transaction completed successfully");
         }
     }
 }

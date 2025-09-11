@@ -13,6 +13,7 @@ builder.Logging.AddDebug();
 
 builder.Services.AddScoped<IProcessPaymentService, ProcessPaymentService>();
 builder.Services.AddScoped<IValidator, Validator>();
+builder.Services.AddSingleton<IPaymentValidator, PaymentValidator>();
 builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
 builder.Services.AddScoped<RefundService>();
 
