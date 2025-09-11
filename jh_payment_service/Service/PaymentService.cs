@@ -1,5 +1,6 @@
 
 using jh_payment_service.Model;
+using jh_payment_service.Model.Payments;
 
 namespace jh_payment_service.Service
 {
@@ -20,10 +21,17 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<ResponseModel> ProcessPaymentAsync(PaymentRequest request)
+        public async Task<ResponseModel> ProcessPaymentAsync(InitialPaymentModel request)
         {
-            var handler = _handlers[request.PaymentMethod];
-            return await handler.InitiatePaymentAsync(request);
+            PaymentRequest paymentRequest = new PaymentRequest
+            {
+                Amount = request.Amount,
+                SenderUserId = request.SenderUserId,
+                ReceiverUserId = request.ReceiverUserId
+            };
+
+            var handler = _handlers[PaymentMethodType.Wallet];
+            return await handler.InitiatePaymentAsync(paymentRequest);
         }
     }
 }
