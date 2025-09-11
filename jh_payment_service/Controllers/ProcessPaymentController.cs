@@ -8,7 +8,7 @@ namespace jh_payment_service.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/payment/[controller]")]
+    [Route("api/v{version:apiVersion}/payment-service/[controller]")]
     public class ProcessPaymentController : ControllerBase
     {
         private readonly ILogger<ProcessPaymentController> _logger;
@@ -26,7 +26,7 @@ namespace jh_payment_service.Controllers
         /// </summary>
         /// <param name="creditPaymentRequest"></param>
         /// <returns></returns>
-        [HttpPost("credit-payment")]
+        [HttpPost("credit")]
         public async Task<IActionResult> CreditPayment([FromBody] CreditPaymentRequest creditPaymentRequest)
         {
             try
@@ -46,7 +46,7 @@ namespace jh_payment_service.Controllers
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        [HttpPost("debit-payment")]
+        [HttpPost("debit")]
         public async Task<IActionResult> DebitPayment([FromBody] DebitPaymentRequest debitPaymentRequest)
         {
             try

@@ -19,7 +19,13 @@ namespace jh_payment_service.Validators
         {
             errorMessage = string.Empty;
             // Basic validation logic
-            
+
+            if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
+            {
+                errorMessage = "Sender and Receiver cannot be the same.";
+                return false;
+            }
+
             if (paymentRequest.Amount <= 0)
             {
                 errorMessage = "Amount must be greater than zero.";
@@ -64,6 +70,12 @@ namespace jh_payment_service.Validators
         {
             errorMessage = string.Empty;
             // Basic validation logic
+
+            if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
+            {
+                errorMessage = "Sender and Receiver cannot be the same.";
+                return false;
+            }
 
             if (paymentRequest.Amount <= 0)
             {

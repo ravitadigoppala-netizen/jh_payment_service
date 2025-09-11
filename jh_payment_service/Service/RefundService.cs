@@ -14,76 +14,74 @@ namespace jh_payment_service.Service
     public class RefundService
     {
         private readonly List<RefundResponse> _refunds = new();
-        private readonly HttpClient _httpClient;
-      
+
         private readonly string _version = "1"; // example, can be read from config
         private readonly int _userId;           // set from outside
         private readonly int _transactionId;    // set from outside
         private readonly string _apiBase = "/api/v{0}/perops/Payment/refund"; // {0} = version
         private RefundRequest _refundRequest;
+        private readonly IHttpClientService _httpClientService;
 
-        public RefundService(HttpClient httpClient)
+        public RefundService(IHttpClientService httpClientService)
         {
-            _httpClient = httpClient;
+            _httpClientService = httpClientService;
         }
 
         /// <summary>
         /// Processes a new refund request for a specific user and transaction.
         /// </summary>
-        public async Task<RefundResponse> ProcessRefund()
+        public async Task<ResponseModel> ProcessRefund(long userId, string transactionId)
         {
+            if (string.IsNullOrEmpty(transactionId))
+            {
+                return ErrorResponseModel.Fail("Invalid refund request", "REF004");
+            }
+
+            Guid.TryParse(transactionId, out Guid transactinGuid);
+
             // Build API URL using class-level fields
-            var apiUrl = string.Format(_apiBase, _version) + $"/{_userId}/{_transactionId}";
+            var apiUrl = "v1/perops/Payment/refund" + $"/{userId}/{transactinGuid}";
 
             // Send request
-            var httpResponse = await _httpClient.PostAsJsonAsync(apiUrl, _refundRequest);
+            var response = await _httpClientService.GetAsync<string>(apiUrl);
 
-            // Ensure success
-            httpResponse.EnsureSuccessStatusCode();
+            if (response == null)
+                return ErrorResponseModel.Fail("Transaction failed", "REF005");
 
-            // Parse response
-            var refundResponse = await httpResponse.Content.ReadFromJsonAsync<RefundResponse>();
-
-            if (refundResponse != null)
-            {
-                _refunds.Add(refundResponse);
-                return refundResponse;
-            }
-
-            throw new Exception("Refund API did not return a valid response.");
+            return ResponseModel.Ok(response, "Success");
         }
 
 
-        /// <summary>
-        /// Retrieves all refund transactions for a specific user.
-        /// </summary>
-        public async Task<IEnumerable<RefundResponse>> GetRefunds(string version, int userId, int transactionId)
-        {
-            var apiUrl = string.Format(_apiBase, version) + $"/{userId}/{transactionId}";
+        ///// <summary>
+        ///// Retrieves all refund transactions for a specific user.
+        ///// </summary>
+        //public async Task<IEnumerable<RefundResponse>> GetRefunds(string version, int userId, int transactionId)
+        //{
+        //    var apiUrl = string.Format(_apiBase, version) + $"/{userId}/{transactionId}";
 
-            // Response variable
-            var refundList = await _httpClient.GetFromJsonAsync<List<RefundResponse>>(apiUrl);
+        //    // Response variable
+        //    var refundList = await _httpClient.GetFromJsonAsync<List<RefundResponse>>(apiUrl);
 
-            if (refundList != null)
-            {
-                _refunds.Clear();
-                _refunds.AddRange(refundList);
-                return refundList;
-            }
+        //    if (refundList != null)
+        //    {
+        //        _refunds.Clear();
+        //        _refunds.AddRange(refundList);
+        //        return refundList;
+        //    }
 
-            return Enumerable.Empty<RefundResponse>();
-        }
+        //    return Enumerable.Empty<RefundResponse>();
+        //}
 
-        /// <summary>
-        /// Retrieves a specific refund by transaction for a given user.
-        /// </summary>
-        public async Task<RefundResponse?> GetRefundById(string version, int userId, int transactionId)
-        {
-            var apiUrl = string.Format(_apiBase, version) + $"/{userId}/{transactionId}";
+        ///// <summary>
+        ///// Retrieves a specific refund by transaction for a given user.
+        ///// </summary>
+        //public async Task<RefundResponse?> GetRefundById(string version, int userId, int transactionId)
+        //{
+        //    var apiUrl = string.Format(_apiBase, version) + $"/{userId}/{transactionId}";
 
-            // Response variable
-            var refundResponse = await _httpClient.GetFromJsonAsync<RefundResponse>(apiUrl);
-            return refundResponse;
-        }
+        //    // Response variable
+        //    var refundResponse = await _httpClient.GetFromJsonAsync<RefundResponse>(apiUrl);
+        //    return refundResponse;
+        //}
     }
 }

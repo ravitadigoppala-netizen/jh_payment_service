@@ -16,16 +16,13 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 // Add services to the container.
-builder.Services.AddHttpClient<RefundService>(client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5041/api/Refund"); // replace with actual base URL
-});
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddScoped<IProcessPaymentService, ProcessPaymentService>();
 builder.Services.AddScoped<IValidator, Validator>();
 builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
+builder.Services.AddScoped<RefundService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
