@@ -1,4 +1,5 @@
 ﻿using jh_payment_service.Model;
+using jh_payment_service.Model.Payments;
 using System.Text.RegularExpressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -14,16 +15,11 @@ namespace jh_payment_service.Validators
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        public bool ValidatePaymentRequest(PaymentRequest paymentRequest, out string errorMessage)
+        public bool ValidateCreditPaymentRequest(CreditPaymentRequest paymentRequest, out string errorMessage)
         {
             errorMessage = string.Empty;
             // Basic validation logic
-            if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
-            {
-                errorMessage = "Sender and receiver cannot be the same user.";
-                return false;
-            }
-
+            
             if (paymentRequest.Amount <= 0)
             {
                 errorMessage = "Amount must be greater than zero.";
@@ -32,44 +28,27 @@ namespace jh_payment_service.Validators
 
             if (paymentRequest.PaymentMethod == PaymentMethodType.Card)
             {
-                if (paymentRequest.CardDetails == null ||
-                    string.IsNullOrEmpty(paymentRequest.CardDetails.CardNumber) ||
-                    string.IsNullOrEmpty(paymentRequest.CardDetails.CardHolderName) ||
-                    int.Parse(paymentRequest.CardDetails.ExpiryMonth) < 1 || int.Parse(paymentRequest.CardDetails.ExpiryMonth) > 12 ||
-                    int.Parse(paymentRequest.CardDetails.ExpiryYear) < DateTime.Now.Year || 
-                    string.IsNullOrEmpty(paymentRequest.CardDetails.CVV) || paymentRequest.CardDetails.CVV.Length != 3)
-                {
-                    errorMessage = "Invalid card details.";
+                if (!ValidateCardDetails(paymentRequest.CardDetails, ref errorMessage))
                     return false;
-                }
             }
             else if (paymentRequest.PaymentMethod == PaymentMethodType.UPI)
             {
-                if (paymentRequest.UpiDetails == null ||
-                    string.IsNullOrEmpty(paymentRequest.UpiDetails.Vpa) || !paymentRequest.UpiDetails.Vpa.Contains("@"))
+                if (!ValidateUpiDetails(paymentRequest.UpiDetails, ref errorMessage))
                 {
-                    errorMessage = "Invalid UPI details.";
                     return false;
                 }
             }
             else if (paymentRequest.PaymentMethod == PaymentMethodType.NetBanking)
             {
-                if (paymentRequest.NetBankingDetails == null ||
-                    string.IsNullOrEmpty(paymentRequest.NetBankingDetails.BankName) ||
-                    string.IsNullOrEmpty(paymentRequest.NetBankingDetails.AccountNumber) || !Regex.IsMatch(paymentRequest.NetBankingDetails.AccountNumber, @"^\d{10,12}$") ||
-                    string.IsNullOrEmpty(paymentRequest.NetBankingDetails.IFSCCode))
+                if(!ValidateNetbankingDetails(paymentRequest.NetBankingDetails, ref errorMessage))
                 {
-                    errorMessage = "Invalid net banking details.";
                     return false;
                 }
             }
             else if (paymentRequest.PaymentMethod == PaymentMethodType.Wallet)
             {
-                if (paymentRequest.WalletDetails == null ||
-                    string.IsNullOrEmpty(paymentRequest.WalletDetails.WalletId) ||
-                    string.IsNullOrEmpty(paymentRequest.WalletDetails.WalletProvider))
+                if(!ValidateWalletDetails(paymentRequest.WalletDetails, ref errorMessage))
                 {
-                    errorMessage = "Invalid wallet details.";
                     return false;
                 }
             }
@@ -77,6 +56,109 @@ namespace jh_payment_service.Validators
             {
                 errorMessage = "Invalid payment method.";
                 return false; // Invalid payment method
+            }
+            return true;
+        }
+
+        public bool ValidateDebitPaymentRequest(DebitPaymentRequest paymentRequest, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            // Basic validation logic
+
+            if (paymentRequest.Amount <= 0)
+            {
+                errorMessage = "Amount must be greater than zero.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(paymentRequest.ProductId))
+            {
+                errorMessage = "ProductId is required.";
+                return false;
+            }
+
+            if (paymentRequest.PaymentMethod == PaymentMethodType.Card)
+            {
+                if (!ValidateCardDetails(paymentRequest.CardDetails, ref errorMessage))
+                    return false;
+            }
+            else if (paymentRequest.PaymentMethod == PaymentMethodType.UPI)
+            {
+                if (!ValidateUpiDetails(paymentRequest.UpiDetails, ref errorMessage))
+                {
+                    return false;
+                }
+            }
+            else if (paymentRequest.PaymentMethod == PaymentMethodType.NetBanking)
+            {
+                if (!ValidateNetbankingDetails(paymentRequest.NetBankingDetails, ref errorMessage))
+                {
+                    return false;
+                }
+            }
+            else if (paymentRequest.PaymentMethod == PaymentMethodType.Wallet)
+            {
+                if (!ValidateWalletDetails(paymentRequest.WalletDetails, ref errorMessage))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid payment method.";
+                return false; // Invalid payment method
+            }
+            return true;
+        }
+
+        private bool ValidateWalletDetails(WalletDetails? walletDetails, ref string errorMessage)
+        {
+            if (walletDetails == null ||
+                    string.IsNullOrEmpty(walletDetails.WalletId) ||
+                    string.IsNullOrEmpty(walletDetails.WalletProvider))
+            {
+                errorMessage = "Invalid wallet details.";
+                return false;
+            }
+            return true;
+        }
+
+        private bool ValidateNetbankingDetails(NetBankingDetails? netBankingDetails, ref string errorMessage)
+        {
+            if (netBankingDetails == null ||
+                    string.IsNullOrEmpty(netBankingDetails.BankName) ||
+                    string.IsNullOrEmpty(netBankingDetails.AccountNumber) || !Regex.IsMatch(netBankingDetails.AccountNumber, @"^\d{10,12}$") ||
+                    string.IsNullOrEmpty(netBankingDetails.IFSCCode))
+            {
+                errorMessage = "Invalid net banking details.";
+                return false;
+            }
+            return true;
+        }
+
+        private static bool ValidateUpiDetails(UpiDetails upiDetails, ref string errorMessage)
+        {
+            if (upiDetails == null ||
+                                string.IsNullOrEmpty(upiDetails.Vpa) || !upiDetails.Vpa.Contains("@"))
+            {
+                errorMessage = "Invalid UPI details.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ValidateCardDetails(CardDetails cardDetails, ref string errorMessage)
+        {
+            if (cardDetails == null ||
+                                string.IsNullOrEmpty(cardDetails.CardNumber) ||
+                                string.IsNullOrEmpty(cardDetails.CardHolderName) ||
+                                int.Parse(cardDetails.ExpiryMonth) < 1 || int.Parse(cardDetails.ExpiryMonth) > 12 ||
+                                int.Parse(cardDetails.ExpiryYear) < DateTime.Now.Year ||
+                                string.IsNullOrEmpty(cardDetails.CVV) || cardDetails.CVV.Length != 3)
+            {
+                errorMessage = "Invalid card details.";
+                return false;
             }
             return true;
         }

@@ -13,14 +13,14 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Credits the user's account with the specified paymentRequest details.
         /// </summary>
-        /// <param name="paymentRequest"></param>
-        Task<ResponseModel> CreditUserAccount(PaymentRequest paymentRequest);
+        /// <param name="creditPaymentRequest"></param>
+        Task<ResponseModel> CreditUserAccount(CreditPaymentRequest creditPaymentRequest);
 
         /// <summary>
         /// Debits the user's account with the specified paymentRequest details.
         /// </summary>
-        /// <param name="paymentRequest"></param>
-        Task<ResponseModel> DebitUserAccount(PaymentRequest paymentRequest);
+        /// <param name="debitPaymentRequest"></param>
+        Task<ResponseModel> DebitUserAccount(DebitPaymentRequest debitPaymentRequest);
 
         /// <summary>
         /// GetAccountBalance

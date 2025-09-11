@@ -10,8 +10,17 @@ namespace jh_payment_service.Validators
         /// <summary>
         /// Validates the given payment request.
         /// </summary>
-        /// <param name="paymentRequest"></param>
+        /// <param name="creditPaymentRequest"></param>
+        /// <param name="errorMessage"></param>
         /// <returns></returns>
-        bool ValidatePaymentRequest(PaymentRequest paymentRequest, out string errorMessage);
+        bool ValidateCreditPaymentRequest(CreditPaymentRequest creditPaymentRequest, out string errorMessage);
+
+        /// <summary>
+        /// Validates the given debit payment request.
+        /// </summary>
+        /// <param name="debitPaymentRequest"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        bool ValidateDebitPaymentRequest(DebitPaymentRequest debitPaymentRequest, out string errorMessage);
     }
 }
