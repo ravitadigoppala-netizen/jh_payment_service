@@ -1,7 +1,7 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
+using jh_payment_service.Model.Payments;
 using jh_payment_service.Validators;
-using System.ComponentModel.DataAnnotations;
 
 namespace jh_payment_service.Service
 {
@@ -32,8 +32,8 @@ namespace jh_payment_service.Service
             string errorMessage;
             if (!_validator.ValidatePaymentRequest(paymentRequest, out errorMessage))
             {
-                _logger.LogError("Invalid payment request: "+ errorMessage);
-                return ResponseModel.BadRequest("Invalid payment request: "+ errorMessage);
+                _logger.LogError("Invalid payment request: " + errorMessage);
+                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
 
             var user = await GetUserData(paymentRequest.SenderUserId);
@@ -101,7 +101,7 @@ namespace jh_payment_service.Service
                 {
                     _logger.LogError("Failed to debit user's account");
                     return ResponseModel.InternalServerError("Failed to debit user's account");
-                }                
+                }
             }
             else
             {
@@ -122,14 +122,20 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> GetAccountBalance(long userId)
         {
             var userAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
-            // var response = await _httpClientService.PostAsync<User, string>($"v1/perops/user/adduser", new User { });
 
             if (userAccount == null)
             {
-                throw new Exception("Fail to get user account detail");
+                return ErrorResponseModel.Fail($"User Account with id: {userId} not found", "NOTIF001 ");
             }
 
-            return ResponseModel.Ok(userAccount, "Your account balance");
+            CheckBalanceModel checkBalance = new CheckBalanceModel
+            {
+                UserId = userAccount.UserId,
+                FullName = userAccount.FullName,
+                Balance = userAccount.Balance
+            };
+
+            return ResponseModel.Ok(checkBalance, "Your account balance fetched successfully");
         }
 
         /// <summary>
@@ -166,7 +172,7 @@ namespace jh_payment_service.Service
                 _logger.LogError(ex, "Failed to credit");
             }
             return null;
-            
+
         }
 
         /// <summary>
@@ -178,7 +184,7 @@ namespace jh_payment_service.Service
         {
             try
             {
-                return await _httpClientService.PutAsync<PaymentRequest, ResponseModel>("v1/perops/Payment/debit/"+paymentRequest.SenderUserId, paymentRequest);
+                return await _httpClientService.PutAsync<PaymentRequest, ResponseModel>("v1/perops/Payment/debit/" + paymentRequest.SenderUserId, paymentRequest);
             }
             catch (Exception ex)
             {
@@ -203,7 +209,7 @@ namespace jh_payment_service.Service
                 _logger.LogError(ex, "Failed to get user account");
             }
             return null;
-                       
+
         }
     }
 }
