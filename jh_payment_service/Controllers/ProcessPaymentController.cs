@@ -8,7 +8,7 @@ namespace jh_payment_service.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/payment/[controller]")]
+    [Route("api/v{version:apiVersion}/ps/[controller]")]
     public class ProcessPaymentController : ControllerBase
     {
         private readonly ILogger<ProcessPaymentController> _logger;

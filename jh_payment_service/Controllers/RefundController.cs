@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 namespace jh_payment_service.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/ps/[controller]")]
     public class RefundController : ControllerBase
     {
         private readonly RefundService _refundService;

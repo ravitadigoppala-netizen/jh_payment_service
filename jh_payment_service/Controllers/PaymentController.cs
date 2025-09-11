@@ -9,7 +9,8 @@ namespace jh_payment_service.Controllers
     /// Provides API endpoints for payment related operations, such as initiate payment.
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/ps/[controller]")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
