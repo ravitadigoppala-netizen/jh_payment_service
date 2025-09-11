@@ -8,7 +8,7 @@ namespace jh_payment_service.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/ps/[controller]")]
+    [Route("api/v{version:apiVersion}/payment-service/[controller]")]
     public class ProcessPaymentController : ControllerBase
     {
         private readonly ILogger<ProcessPaymentController> _logger;
@@ -24,20 +24,20 @@ namespace jh_payment_service.Controllers
         /// <summary>
         /// This endpoint processes a credit payment request.
         /// </summary>
-        /// <param name="paymentRequest"></param>
+        /// <param name="creditPaymentRequest"></param>
         /// <returns></returns>
-        [HttpPost("credit-payment")]
-        public async Task<IActionResult> CreditPayment([FromBody] PaymentRequest paymentRequest)
+        [HttpPost("credit")]
+        public async Task<IActionResult> CreditPayment([FromBody] CreditPaymentRequest creditPaymentRequest)
         {
             try
             {
-                var response = await _processPaymentService.CreditUserAccount(paymentRequest);
+                var response = await _processPaymentService.CreditUserAccount(creditPaymentRequest);
                 return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing credit payment");
-                return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing credit payment"));
+                throw;
             }
         }
 
@@ -46,20 +46,20 @@ namespace jh_payment_service.Controllers
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        [HttpPost("debit-payment")]
-        public async Task<IActionResult> DebitPayment([FromBody] PaymentRequest paymentRequest)
+        [HttpPost("debit")]
+        public async Task<IActionResult> DebitPayment([FromBody] DebitPaymentRequest debitPaymentRequest)
         {
             try
             {
                 _logger.LogInformation("Debit payment request received");
                 
-                var response = await _processPaymentService.DebitUserAccount(paymentRequest);
+                var response = await _processPaymentService.DebitUserAccount(debitPaymentRequest);
                 return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing debit payment");
-                return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing debit payment"));
+                throw;
             }
         }
 
@@ -69,10 +69,19 @@ namespace jh_payment_service.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpPost("check-balance/{userId}")]
-        public async Task<ResponseModel> CheckBalance([FromRoute] long userId)
+        public async Task<IActionResult> CheckBalance([FromRoute] long userId)
         {
-            _logger.LogInformation("Debit payment request received");
-            return await _processPaymentService.GetAccountBalance(userId);
+            try
+            {
+                _logger.LogInformation("Check balance request received");
+                var response = await _processPaymentService.GetAccountBalance(userId);
+                return StatusCode((int)response.StatusCode, response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking account balance");
+                throw;
+            }
         }
     }
 }
