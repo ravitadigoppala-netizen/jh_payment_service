@@ -1,4 +1,3 @@
-
 using jh_payment_service.Model;
 using jh_payment_service.Model.Payments;
 
@@ -23,15 +22,8 @@ namespace jh_payment_service.Service
         /// <returns></returns>
         public async Task<ResponseModel> ProcessPaymentAsync(InitialPaymentModel request)
         {
-            PaymentRequest paymentRequest = new PaymentRequest
-            {
-                Amount = request.Amount,
-                SenderUserId = request.SenderUserId,
-                ReceiverUserId = request.ReceiverUserId
-            };
-
             var handler = _handlers[PaymentMethodType.Wallet];
-            return await handler.InitiatePaymentAsync(paymentRequest);
+            return await handler.InitiatePaymentAsync(request);
         }
     }
 }
