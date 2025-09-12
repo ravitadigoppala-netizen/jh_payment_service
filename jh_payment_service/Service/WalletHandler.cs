@@ -1,6 +1,7 @@
-
 using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
+using jh_payment_service.Model.Payments;
+using jh_payment_service.Validators;
 
 namespace jh_payment_service.Service
 {
@@ -10,10 +11,14 @@ namespace jh_payment_service.Service
     public class WalletHandler : IPaymentHandler
     {
         private readonly IHttpClientService _httpClientService;
+        private readonly ILogger<WalletHandler> _logger;
+        private readonly IPaymentValidator _validator;
 
-        public WalletHandler(IHttpClientService httpClientService)
+        public WalletHandler(IHttpClientService httpClientService, ILogger<WalletHandler> logger, IPaymentValidator paymentValidator)
         {
             _httpClientService = httpClientService;
+            _logger = logger;
+            _validator = paymentValidator;
         }
 
 
@@ -22,30 +27,53 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<ResponseModel> InitiatePaymentAsync(PaymentRequest request)
+        public async Task<ResponseModel> InitiatePaymentAsync(InitialPaymentModel request)
         {
+            string errorMessage;
+            if (!_validator.ValidatePaymentRequest(request, out errorMessage))
+            {
+                _logger.LogError("Invalid payment request: " + errorMessage);
+                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
+            }
             var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
 
             if (sender == null)
             {
-                return ErrorResponseModel.Fail($"User with id: {request.SenderUserId} not found", "AUTH001");
+                return ErrorResponseModel.Fail($"Sender with id: {request.SenderUserId} not found", "NOTIF001 ");
             }
-
 
             var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
-            if (sender == null)
+            if (receiver == null)
             {
-                return ErrorResponseModel.Fail("User not found", "AUTH001");
+                return ErrorResponseModel.Fail($"Receiver with id: {request.ReceiverUserId} not found", "NOTIF001 ");
             }
 
-            var paymentResponse = new PaymentResponse
-            {
-                Status = PaymentStatus.Success,
-                Message = "Wallet payment processed",
-                PaymentId = Guid.NewGuid()
-            };
+            var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
+            var receiverAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.ReceiverUserId}");
 
-            return ResponseModel.Ok(paymentResponse.ToString(), "working");
+            if (senderAccount.Balance < request.Amount)
+            {
+                return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
+            }
+
+            var response = await _httpClientService.PutAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
+            {
+                SenderUserId = request.SenderUserId,
+                ReceiverUserId = request.ReceiverUserId,
+                Amount = request.Amount,
+            });
+
+            if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                _logger.LogInformation($"Credited balance for user {request.ReceiverUserId}");
+            }
+            else
+            {
+                _logger.LogError("Failed to credit user's account");
+                return ResponseModel.InternalServerError("Failed to credit user's account");
+            }
+
+            return ResponseModel.Ok(request, "Transaction completed successfully");
         }
     }
 }

@@ -7,7 +7,7 @@ namespace jh_payment_service.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/ps/[controller]")]
+    [Route("api/v{version:apiVersion}/payment-service/[controller]")]
     public class RefundController : ControllerBase
     {
         private readonly RefundService _refundService;

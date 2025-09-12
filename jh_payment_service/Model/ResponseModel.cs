@@ -23,6 +23,11 @@ namespace jh_payment_service.Model
         public string Message { set; get; }
 
         /// <summary>
+        /// Response error code for identifying specific errors.
+        /// </summary>
+        public string ErrorCode { set; get; }
+
+        /// <summary>
         /// This method creates a successful response model with status code 200 (OK).
         /// </summary>
         /// <param name="reponse"></param>
@@ -42,14 +47,16 @@ namespace jh_payment_service.Model
         /// This method creates a response model for bad requests with status code 400 (Bad Request).
         /// </summary>
         /// <param name="message"></param>
+        /// <param name="errorCode"></param>
         /// <returns></returns>
-        public static ResponseModel BadRequest(string message)
+        public static ResponseModel BadRequest(string message, string errorCode = null)
         {
             return new ResponseModel
             {
                 ResponseBody = "No content",
                 StatusCode = HttpStatusCode.BadRequest,
-                Message = message ?? "Bad Request"
+                Message = message ?? "Bad Request",
+                ErrorCode = errorCode,
             };
         }
 
@@ -57,14 +64,16 @@ namespace jh_payment_service.Model
         /// This method creates an internal server error response model with status code 500 (Internal Server Error).
         /// </summary>
         /// <param name="message"></param>
+        /// <param name="errorCode"></param>
         /// <returns></returns>
-        public static ResponseModel InternalServerError(string message)
+        public static ResponseModel InternalServerError(string message, string errorCode = null)
         {
             return new ResponseModel
             {
                 ResponseBody = "No content",
                 StatusCode = HttpStatusCode.InternalServerError,
-                Message = message ?? "Internal Server Error"
+                Message = message ?? "Internal Server Error",
+                ErrorCode = errorCode,
             };
         }
     }

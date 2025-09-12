@@ -1,4 +1,5 @@
-﻿using jh_payment_service.Model;
+﻿using AutoMapper;
+using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
 using jh_payment_service.Model.Payments;
 using jh_payment_service.Validators;
@@ -13,32 +14,36 @@ namespace jh_payment_service.Service
         private readonly ILogger<ProcessPaymentService> _logger;
         private readonly IHttpClientService _httpClientService;
         private readonly IValidator _validator;
+        private readonly IMapper _mapper;
         public ProcessPaymentService(ILogger<ProcessPaymentService> logger, IHttpClientService httpClientService,
-            IValidator validator)
+            IValidator validator, IMapper mapper)
         {
             _logger = logger;
             _httpClientService = httpClientService;
             _validator = validator;
+            _mapper = mapper;
         }
 
         /// <summary>
         /// Credit the user's account
         /// </summary>
         /// <param name="PaymentRequest"></param>
-        public async Task<ResponseModel> CreditUserAccount(PaymentRequest paymentRequest)
+        public async Task<ResponseModel> CreditUserAccount(CreditPaymentRequest creditPaymentRequest)
         {
             // Logic to credit the user's account
-            _logger.LogInformation($"Crediting {paymentRequest.Amount} to user {paymentRequest.SenderUserId}");
+            _logger.LogInformation($"Crediting {creditPaymentRequest.Amount} to user {creditPaymentRequest.SenderUserId}");
             string errorMessage;
-            if (!_validator.ValidatePaymentRequest(paymentRequest, out errorMessage))
+            if (!_validator.ValidateCreditPaymentRequest(creditPaymentRequest, out errorMessage))
             {
                 _logger.LogError("Invalid payment request: " + errorMessage);
                 return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
 
-            var user = await GetUserData(paymentRequest.SenderUserId);
+            var user = await GetUserData(creditPaymentRequest.SenderUserId);
             if (user != null)
             {
+                var paymentRequest = _mapper.Map<PaymentRequest>(creditPaymentRequest);
+
                 var response = await CreditFund(paymentRequest);
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -57,42 +62,42 @@ namespace jh_payment_service.Service
             }
             // Simulate success
             _logger.LogInformation("Transaction completed successfully");
-            return ResponseModel.Ok(paymentRequest, "Transaction completed successfully");
+            return ResponseModel.Ok(creditPaymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
         /// Debit the user's account
         /// </summary>
         /// <param name="PaymentRequest"></param>
-        public async Task<ResponseModel> DebitUserAccount(PaymentRequest paymentRequest)
+        public async Task<ResponseModel> DebitUserAccount(DebitPaymentRequest debitPaymentRequest)
         {
             // Logic to debit the user's account
-            _logger.LogInformation($"Debiting {paymentRequest.Amount} from user {paymentRequest.SenderUserId}");
+            _logger.LogInformation($"Debiting {debitPaymentRequest.Amount} from user {debitPaymentRequest.SenderUserId}");
 
             string errorMessage;
-            if (!_validator.ValidatePaymentRequest(paymentRequest, out errorMessage))
+            if (!_validator.ValidateDebitPaymentRequest(debitPaymentRequest, out errorMessage))
             {
                 _logger.LogError("Invalid payment request: " + errorMessage);
                 return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
 
-            var user = await GetUserData(paymentRequest.SenderUserId);
+            var user = await GetUserData(debitPaymentRequest.SenderUserId);
             if (user != null)
             {
-                var account = await GetUserAccount(paymentRequest.SenderUserId);
+                var account = await GetUserAccount(debitPaymentRequest.SenderUserId);
                 if (account == null)
                 {
                     _logger.LogError("User account not found");
                     return ResponseModel.BadRequest("User account not found");
                 }
 
-                if (account.Balance < paymentRequest.Amount)
+                if (account.Balance < debitPaymentRequest.Amount)
                 {
                     _logger.LogError("Insufficient balance to process transaction");
                     return ResponseModel.BadRequest("Insufficient balance to process transaction");
                 }
 
-                var response = await DebitFund(paymentRequest);
+                var response = await DebitFund(debitPaymentRequest);
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogInformation($"Debited balance for user {user.UserId}");
@@ -110,7 +115,7 @@ namespace jh_payment_service.Service
             }
             // Simulate success
             _logger.LogInformation("Transaction completed successfully");
-            return ResponseModel.Ok(paymentRequest, "Transaction completed successfully");
+            return ResponseModel.Ok(debitPaymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
@@ -180,11 +185,11 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        private async Task<ResponseModel> DebitFund(PaymentRequest paymentRequest)
+        private async Task<ResponseModel> DebitFund(DebitPaymentRequest paymentRequest)
         {
             try
             {
-                return await _httpClientService.PutAsync<PaymentRequest, ResponseModel>("v1/perops/Payment/debit/" + paymentRequest.SenderUserId, paymentRequest);
+                return await _httpClientService.PutAsync<DebitPaymentRequest, ResponseModel>("v1/perops/Payment/debit/"+paymentRequest.SenderUserId, paymentRequest);
             }
             catch (Exception ex)
             {
