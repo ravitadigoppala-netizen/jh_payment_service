@@ -68,7 +68,7 @@ namespace jh_payment_service.Controllers
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpPost("check-balance/{userId}")]
+        [HttpGet("check-balance/{userId}")]
         public async Task<IActionResult> CheckBalance([FromRoute] long userId)
         {
             try

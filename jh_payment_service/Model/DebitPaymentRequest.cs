@@ -5,7 +5,7 @@ namespace jh_payment_service.Model
     /// <summary>
     /// This class represents a debit payment request made by a user.
     /// </summary>
-    public class DebitPaymentRequest : PaymentRequest
+    public class DebitPaymentRequest : CreditPaymentRequest
     {
         /// <summary>
         /// Represents the unique identifier of the product.
