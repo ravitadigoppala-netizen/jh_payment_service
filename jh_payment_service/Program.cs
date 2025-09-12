@@ -1,8 +1,12 @@
+using jh_payment_service.Mapper;
+using jh_payment_service.Middleware;
+using jh_payment_service.Model;
 using jh_payment_service.Service;
 using jh_payment_service.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using jh_payment_service.Model;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
+
+// Add services to the container.
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddScoped<IProcessPaymentService, ProcessPaymentService>();
 builder.Services.AddScoped<IValidator, Validator>();
@@ -69,6 +77,8 @@ builder.Services.AddSingleton<IPaymentService>(provider =>
 
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
