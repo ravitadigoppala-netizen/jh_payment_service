@@ -130,7 +130,7 @@ namespace jh_payment_service.Service
 
             if (userAccount == null)
             {
-                return ErrorResponseModel.Fail($"User Account with id: {userId} not found", "NOTIF001 ");
+                return ResponseModel.BadRequest($"User Account with id: {userId} not found", "NOTIF001 ");
             }
 
             CheckBalanceModel checkBalance = new CheckBalanceModel
@@ -189,7 +189,7 @@ namespace jh_payment_service.Service
         {
             try
             {
-                return await _httpClientService.PutAsync<DebitPaymentRequest, ResponseModel>("v1/perops/Payment/debit/"+paymentRequest.SenderUserId, paymentRequest);
+                return await _httpClientService.PutAsync<DebitPaymentRequest, ResponseModel>("v1/perops/Payment/debit/" + paymentRequest.SenderUserId, paymentRequest);
             }
             catch (Exception ex)
             {
