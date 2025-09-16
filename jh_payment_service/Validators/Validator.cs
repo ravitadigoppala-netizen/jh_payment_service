@@ -1,4 +1,5 @@
-﻿using jh_payment_service.Model;
+﻿using jh_payment_service.Constants;
+using jh_payment_service.Model;
 using jh_payment_service.Model.Payments;
 using System.Text.RegularExpressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -20,15 +21,15 @@ namespace jh_payment_service.Validators
             errorMessage = string.Empty;
             // Basic validation logic
 
-            if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
+            if (paymentRequest.UserId <= 0)
             {
-                errorMessage = "Sender and Receiver cannot be the same.";
+                errorMessage = PaymentErrorConstants.InvalidUserId;
                 return false;
             }
 
             if (paymentRequest.Amount <= 0)
             {
-                errorMessage = "Amount must be greater than zero.";
+                errorMessage = PaymentErrorConstants.AmountMustBeGreaterThanZero;
                 return false;
             }
 
@@ -60,7 +61,7 @@ namespace jh_payment_service.Validators
             }
             else
             {
-                errorMessage = "Invalid payment method.";
+                errorMessage = PaymentErrorConstants.InvalidPaymentMethod;
                 return false; // Invalid payment method
             }
             return true;
@@ -71,21 +72,21 @@ namespace jh_payment_service.Validators
             errorMessage = string.Empty;
             // Basic validation logic
 
-            if (paymentRequest.SenderUserId == paymentRequest.ReceiverUserId)
+            if (paymentRequest.UserId <= 0)
             {
-                errorMessage = "Sender and Receiver cannot be the same.";
+                errorMessage = PaymentErrorConstants.InvalidUserId;
                 return false;
             }
 
             if (paymentRequest.Amount <= 0)
             {
-                errorMessage = "Amount must be greater than zero.";
+                errorMessage = PaymentErrorConstants.AmountMustBeGreaterThanZero;
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(paymentRequest.ProductId))
             {
-                errorMessage = "ProductId is required.";
+                errorMessage = PaymentErrorConstants.ProductIdRequired;
                 return false;
             }
 
@@ -117,7 +118,7 @@ namespace jh_payment_service.Validators
             }
             else
             {
-                errorMessage = "Invalid payment method.";
+                errorMessage = PaymentErrorConstants.InvalidPaymentMethod;
                 return false; // Invalid payment method
             }
             return true;
@@ -129,7 +130,7 @@ namespace jh_payment_service.Validators
                     string.IsNullOrEmpty(walletDetails.WalletId) ||
                     string.IsNullOrEmpty(walletDetails.WalletProvider))
             {
-                errorMessage = "Invalid wallet details.";
+                errorMessage = PaymentErrorConstants.InvalidWalletDetails;
                 return false;
             }
             return true;
@@ -142,7 +143,7 @@ namespace jh_payment_service.Validators
                     string.IsNullOrEmpty(netBankingDetails.AccountNumber) || !Regex.IsMatch(netBankingDetails.AccountNumber, @"^\d{10,12}$") ||
                     string.IsNullOrEmpty(netBankingDetails.IFSCCode))
             {
-                errorMessage = "Invalid net banking details.";
+                errorMessage = PaymentErrorConstants.InvalidNetBankingDetails;
                 return false;
             }
             return true;
@@ -153,7 +154,7 @@ namespace jh_payment_service.Validators
             if (upiDetails == null ||
                                 string.IsNullOrEmpty(upiDetails.Vpa) || !upiDetails.Vpa.Contains("@"))
             {
-                errorMessage = "Invalid UPI details.";
+                errorMessage = PaymentErrorConstants.InvalidUpiDetails;
                 return false;
             }
 
@@ -169,7 +170,7 @@ namespace jh_payment_service.Validators
                                 int.Parse(cardDetails.ExpiryYear) < DateTime.Now.Year ||
                                 string.IsNullOrEmpty(cardDetails.CVV) || cardDetails.CVV.Length != 3)
             {
-                errorMessage = "Invalid card details.";
+                errorMessage = PaymentErrorConstants.InvalidCardDetails;
                 return false;
             }
             return true;
