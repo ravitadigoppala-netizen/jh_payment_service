@@ -1,4 +1,5 @@
-﻿using jh_payment_service.Model.Payments;
+﻿using jh_payment_service.Model;
+using jh_payment_service.Model.Payments;
 
 namespace jh_payment_service.Validators
 {
@@ -13,6 +14,12 @@ namespace jh_payment_service.Validators
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
         bool ValidatePaymentRequest(InitialPaymentModel paymentRequest, out string errorMessage);
+        /// <summary>
+        /// Validates the given card to card payment request.
+        /// </summary>
+        /// <param name="paymentRequest"></param>
+        /// <returns></returns>
+        bool ValidateCardToCardPaymentRequest(CardPaymentRequest request, out string errorMessage);
     }
 }
 

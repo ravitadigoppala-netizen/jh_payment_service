@@ -14,5 +14,12 @@ namespace jh_payment_service.Service
         /// <param name="request"></param>
         /// <returns></returns>
         Task<ResponseModel> ProcessPaymentAsync(InitialPaymentModel request);
+
+        /// <summary>
+        /// card payment Initiate process.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<ResponseModel> ProcessCardPaymentAsync(CardPaymentRequest request);
     }
 }
