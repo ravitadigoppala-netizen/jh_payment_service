@@ -1,10 +1,4 @@
 ﻿using jh_payment_service.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace jh_payment_service.Service
 {
@@ -47,6 +41,30 @@ namespace jh_payment_service.Service
 
             if (response == null)
                 return ErrorResponseModel.Fail("Transaction failed", "REF005");
+
+            return ResponseModel.Ok(response, "Success");
+        }
+
+        /// <summary>
+        /// Processes a new partial refund request for a specific user and transaction.
+        /// </summary>
+        public async Task<ResponseModel> ProcessPartialRefund(long userId, string transactionId)
+        {
+            if (string.IsNullOrEmpty(transactionId))
+            {
+                return ResponseModel.BadRequest("Invalid partial refund request", "REF004");
+            }
+
+            Guid.TryParse(transactionId, out Guid transactinGuid);
+
+            // Build API URL using class-level fields
+            var apiUrl = "v1/perops/Payment/partial-refund" + $"/{userId}/{transactinGuid}";
+
+            // Send request
+            var response = await _httpClientService.GetAsync<string>(apiUrl);
+
+            if (response == null)
+                return ResponseModel.BadRequest("Transaction failed", "REF005");
 
             return ResponseModel.Ok(response, "Success");
         }
