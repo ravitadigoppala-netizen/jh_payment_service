@@ -44,6 +44,22 @@ namespace jh_payment_service.Model
         }
 
         /// <summary>
+        /// This method creates a successful response model with status code 200 (OK).
+        /// </summary>
+        /// <param name="reponse"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static ResponseModel Created(dynamic reponse, string message = "No content")
+        {
+            return new ResponseModel
+            {
+                ResponseBody = reponse,
+                StatusCode = HttpStatusCode.Created,
+                Message = message ?? "Successfully completed"
+            };
+        }
+
+        /// <summary>
         /// This method creates a response model for bad requests with status code 400 (Bad Request).
         /// </summary>
         /// <param name="message"></param>

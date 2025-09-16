@@ -37,7 +37,7 @@ namespace jh_payment_service.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            var errorResponse = ResponseModel.InternalServerError("An unexpected error occurred. Please contact administration.");            
+            var errorResponse = ResponseModel.InternalServerError("An unexpected error occurred. Please contact administration.", "ERR001");            
 
             var jsonResponse = JsonSerializer.Serialize(errorResponse);
             return context.Response.WriteAsync(jsonResponse);
