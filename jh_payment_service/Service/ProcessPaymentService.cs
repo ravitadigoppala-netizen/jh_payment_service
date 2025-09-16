@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using jh_payment_service.Constants;
 using jh_payment_service.Model;
 using jh_payment_service.Model.Entity;
 using jh_payment_service.Model.Payments;
@@ -31,15 +32,15 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> CreditUserAccount(CreditPaymentRequest creditPaymentRequest)
         {
             // Logic to credit the user's account
-            _logger.LogInformation($"Crediting {creditPaymentRequest.Amount} to user {creditPaymentRequest.SenderUserId}");
+            _logger.LogInformation($"Crediting {creditPaymentRequest.Amount} to user {creditPaymentRequest.UserId}");
             string errorMessage;
             if (!_validator.ValidateCreditPaymentRequest(creditPaymentRequest, out errorMessage))
             {
-                _logger.LogError("Invalid payment request: " + errorMessage);
-                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
+                _logger.LogError("Invalid payment request: "+ errorMessage);
+                return ResponseModel.BadRequest(PaymentErrorConstants.InvalidPaymentRequest+" Error : "+ errorMessage, PaymentErrorConstants.InvalidPaymentRequestCode);
             }
 
-            var user = await GetUserData(creditPaymentRequest.SenderUserId);
+            var user = await GetUserData(creditPaymentRequest.UserId);
             if (user != null)
             {
                 var paymentRequest = _mapper.Map<PaymentRequest>(creditPaymentRequest);
@@ -48,21 +49,21 @@ namespace jh_payment_service.Service
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogInformation($"Credited balance for user {user.UserId}");
+                    // Simulate success
+                    _logger.LogInformation(PaymentErrorConstants.TransactionSuccess);
+                    return ResponseModel.Created(response.ResponseBody, PaymentErrorConstants.TransactionSuccess);
                 }
                 else
                 {
                     _logger.LogError("Failed to credit user's account");
-                    return ResponseModel.InternalServerError("Failed to credit user's account");
+                    return ResponseModel.InternalServerError(PaymentErrorConstants.FailedToCreditAccount, PaymentErrorConstants.FailedToCreditAccountCode);
                 }
             }
             else
             {
-                _logger.LogError("User not found");
-                return ResponseModel.BadRequest("User not found");
+                _logger.LogError(PaymentErrorConstants.UserNotFound);
+                return ResponseModel.BadRequest(PaymentErrorConstants.UserNotFound, PaymentErrorConstants.UserNotFoundCode);
             }
-            // Simulate success
-            _logger.LogInformation("Transaction completed successfully");
-            return ResponseModel.Ok(creditPaymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
@@ -72,50 +73,52 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> DebitUserAccount(DebitPaymentRequest debitPaymentRequest)
         {
             // Logic to debit the user's account
-            _logger.LogInformation($"Debiting {debitPaymentRequest.Amount} from user {debitPaymentRequest.SenderUserId}");
+            _logger.LogInformation($"Debiting {debitPaymentRequest.Amount} from user {debitPaymentRequest.UserId}");
 
             string errorMessage;
             if (!_validator.ValidateDebitPaymentRequest(debitPaymentRequest, out errorMessage))
             {
                 _logger.LogError("Invalid payment request: " + errorMessage);
-                return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
+                return ResponseModel.BadRequest(PaymentErrorConstants.InvalidPaymentRequest + " Error : " + errorMessage, PaymentErrorConstants.InvalidPaymentRequestCode);
             }
 
-            var user = await GetUserData(debitPaymentRequest.SenderUserId);
+            var user = await GetUserData(debitPaymentRequest.UserId);
             if (user != null)
             {
-                var account = await GetUserAccount(debitPaymentRequest.SenderUserId);
+                var account = await GetUserAccount(debitPaymentRequest.UserId);
                 if (account == null)
                 {
                     _logger.LogError("User account not found");
-                    return ResponseModel.BadRequest("User account not found");
+                    return ResponseModel.BadRequest(PaymentErrorConstants.UserAccountNotFound,PaymentErrorConstants.UserAccountNotFoundCode);
                 }
 
                 if (account.Balance < debitPaymentRequest.Amount)
                 {
                     _logger.LogError("Insufficient balance to process transaction");
-                    return ResponseModel.BadRequest("Insufficient balance to process transaction");
+                    return ResponseModel.BadRequest(PaymentErrorConstants.InsufficientFunds, PaymentErrorConstants.InsufficientFundsCode);
                 }
 
-                var response = await DebitFund(debitPaymentRequest);
+                var paymentRequest = _mapper.Map<PaymentDebitRequest>(debitPaymentRequest);
+
+                var response = await DebitFund(paymentRequest);
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogInformation($"Debited balance for user {user.UserId}");
+                    // Simulate success
+                    _logger.LogInformation(PaymentErrorConstants.TransactionSuccess);
+                    return ResponseModel.Created(response.ResponseBody, PaymentErrorConstants.TransactionSuccess);
                 }
                 else
                 {
                     _logger.LogError("Failed to debit user's account");
-                    return ResponseModel.InternalServerError("Failed to debit user's account");
-                }
+                    return ResponseModel.InternalServerError(PaymentErrorConstants.FailedToDebitAccount, PaymentErrorConstants.FailedToDebitAccountCode);
+                }                
             }
             else
             {
                 _logger.LogError("User not found");
-                return ResponseModel.BadRequest("User not found");
+                return ResponseModel.BadRequest(PaymentErrorConstants.UserNotFound, PaymentErrorConstants.UserNotFoundCode);
             }
-            // Simulate success
-            _logger.LogInformation("Transaction completed successfully");
-            return ResponseModel.Ok(debitPaymentRequest, "Transaction completed successfully");
         }
 
         /// <summary>
@@ -130,7 +133,8 @@ namespace jh_payment_service.Service
 
             if (userAccount == null)
             {
-                return ResponseModel.BadRequest($"User Account with id: {userId} not found", "NOTIF001 ");
+                _logger.LogError("User account not found");
+                return ResponseModel.BadRequest(PaymentErrorConstants.UserAccountNotFound, PaymentErrorConstants.UserAccountNotFoundCode);
             }
 
             CheckBalanceModel checkBalance = new CheckBalanceModel
@@ -185,11 +189,11 @@ namespace jh_payment_service.Service
         /// </summary>
         /// <param name="paymentRequest"></param>
         /// <returns></returns>
-        private async Task<ResponseModel> DebitFund(DebitPaymentRequest paymentRequest)
+        private async Task<ResponseModel> DebitFund(PaymentDebitRequest paymentRequest)
         {
             try
             {
-                return await _httpClientService.PutAsync<DebitPaymentRequest, ResponseModel>("v1/perops/Payment/debit/" + paymentRequest.SenderUserId, paymentRequest);
+                return await _httpClientService.PostAsync<PaymentDebitRequest, ResponseModel>("v1/perops/Payment/debit/"+paymentRequest.SenderUserId, paymentRequest);
             }
             catch (Exception ex)
             {

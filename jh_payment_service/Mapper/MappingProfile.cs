@@ -16,7 +16,11 @@ namespace jh_payment_service.Mapper
             //    .ForMember(dest => dest.RoutingNumber, opt => opt.MapFrom(src => src.AccountDetails.RoutingNumber))
             //    .ForMember(dest => dest.CardNumber, opt => opt.MapFrom(src => src.AccountDetails.CardNumber));
 
-            CreateMap<CreditPaymentRequest, PaymentRequest>();
+            CreateMap<CreditPaymentRequest, PaymentRequest>()
+                .ForMember(dest => dest.SenderUserId, opt => opt.MapFrom(src => src.UserId));
+
+            CreateMap<DebitPaymentRequest, PaymentDebitRequest>()
+                .ForMember(dest => dest.SenderUserId, opt => opt.MapFrom(src => src.UserId));
         }
     }
 }
