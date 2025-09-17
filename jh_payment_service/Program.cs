@@ -1,12 +1,9 @@
 using jh_payment_service.Mapper;
 using jh_payment_service.Middleware;
-using jh_payment_service.Model;
 using jh_payment_service.Service;
 using jh_payment_service.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +19,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IProcessPaymentService, ProcessPaymentService>();
 builder.Services.AddScoped<IValidator, Validator>();
 builder.Services.AddSingleton<IPaymentValidator, PaymentValidator>();
+builder.Services.AddSingleton<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IHttpClientService, HttpClientService>();
 builder.Services.AddScoped<RefundService>();
 
@@ -55,26 +53,6 @@ builder.Services.AddApiVersioning(options =>
         new HeaderApiVersionReader("X-Version"),          // Header: X-Version: 1.0
         new MediaTypeApiVersionReader("ver"));            // Header: Content-Type: application/json;ver=1.0
 });
-
-// Register payment handlers
-builder.Services.AddSingleton<CardPaymentHandler>();
-builder.Services.AddSingleton<UPIPaymentHandler>();
-builder.Services.AddSingleton<NetBankingHandler>();
-builder.Services.AddSingleton<WalletHandler>();
-
-builder.Services.AddSingleton<IPaymentService>(provider =>
-{
-    var handlers = new Dictionary<PaymentMethodType, IPaymentHandler>
-    {
-        { PaymentMethodType.Card, provider.GetRequiredService<CardPaymentHandler>() },
-        { PaymentMethodType.UPI, provider.GetRequiredService<UPIPaymentHandler>() },
-        { PaymentMethodType.NetBanking, provider.GetRequiredService<NetBankingHandler>() },
-        { PaymentMethodType.Wallet, provider.GetRequiredService<WalletHandler>() }
-    };
-
-    return new PaymentService(handlers);
-});
-
 
 var app = builder.Build();
 

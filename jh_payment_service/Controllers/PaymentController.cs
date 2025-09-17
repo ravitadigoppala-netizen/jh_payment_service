@@ -21,7 +21,7 @@ namespace jh_payment_service.Controllers
         }
 
         /// <summary>
-        ///Provides API endpoints for payment related operations, such as initiate payment.
+        ///Provides API endpoints for payment related operations, such as initiate wallet to wallet payment.
         /// </summary>
         [HttpPost("wallet/transfer/initiate")]
         public async Task<IActionResult> InitiatePayment([FromBody] InitialPaymentModel request)
@@ -34,6 +34,23 @@ namespace jh_payment_service.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing credit payment"));
+            }
+        }
+
+        /// <summary>
+        ///Provides API endpoints for payment related operations, such as initiate card payments.
+        /// </summary>
+        [HttpPost("card/transfer/initiate")]
+        public async Task<IActionResult> InitiateCardPayment([FromBody] CardPaymentRequest request)
+        {
+            try
+            {
+                var response = await _paymentService.ProcessCardPaymentAsync(request);
+                return StatusCode((int)response.StatusCode, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ResponseModel.InternalServerError("An error occured while processing card to card payment"));
             }
         }
     }
