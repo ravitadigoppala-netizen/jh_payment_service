@@ -1,7 +1,5 @@
 ﻿using jh_payment_service.Model;
-using jh_payment_service.Model.Entity;
 using jh_payment_service.Service;
-using jh_payment_service.Validators;
 using Microsoft.AspNetCore.Mvc;
 
 namespace jh_payment_service.Controllers
@@ -13,7 +11,7 @@ namespace jh_payment_service.Controllers
     {
         private readonly ILogger<ProcessPaymentController> _logger;
         private readonly IProcessPaymentService _processPaymentService;
-        
+
         public ProcessPaymentController(ILogger<ProcessPaymentController> logger,
             IProcessPaymentService processPaymentService)
         {
@@ -52,7 +50,7 @@ namespace jh_payment_service.Controllers
             try
             {
                 _logger.LogInformation("Debit payment request received");
-                
+
                 var response = await _processPaymentService.DebitUserAccount(debitPaymentRequest);
                 return StatusCode((int)response.StatusCode, response);
             }
@@ -64,7 +62,7 @@ namespace jh_payment_service.Controllers
         }
 
         /// <summary>
-        /// This endpoint processes a debit payment request.
+        /// This endpoint processes a check balance request.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
