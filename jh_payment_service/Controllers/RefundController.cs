@@ -1,7 +1,6 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Service;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace jh_payment_service.Controllers
 {
@@ -20,11 +19,23 @@ namespace jh_payment_service.Controllers
         /// <summary>
         /// Process a new refund request for a user and transaction.
         /// </summary>
-        [HttpPost("refund/{userId}/{transactionId}")]
-        public async Task<ResponseModel> ProcessRefund([FromRoute]long userId, [FromRoute] string transactionId)
+        [HttpPut("refund/{userId}/{transactionId}")]
+        public async Task<ResponseModel> ProcessRefund([FromRoute] long userId, [FromRoute] string transactionId)
         {
             return await _refundService.ProcessRefund(userId, transactionId);
         }
+
+
+        /// <summary>
+        /// Process a new partial refund request for a user and transaction.
+        /// </summary>
+        [HttpPut("partial-refund/{userId}/{transactionId}")]
+        public async Task<ResponseModel> ProcessPartialRefund([FromRoute] long userId, [FromRoute] string transactionId)
+        {
+            return await _refundService.ProcessPartialRefund(userId, transactionId);
+        }
+
+
 
         ///// <summary>
         ///// Get all refund transactions for a user and transaction.
