@@ -36,6 +36,13 @@ namespace jh_payment_service.Service
                 return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
 
+            var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
+
+            if (senderAccount.Balance < request.Amount)
+            {
+                return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
+            }
+
             var response = await _httpClientService.PutAsync<CardPaymentRequest, ResponseModel>($"v1/perops/Payment/transfer/card", new CardPaymentRequest
             {
                 SenderUserId = request.SenderUserId,
