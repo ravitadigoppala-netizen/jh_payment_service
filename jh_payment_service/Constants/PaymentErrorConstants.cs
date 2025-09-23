@@ -37,8 +37,13 @@
         public const string UserAccountNotFoundCode = "PAY_007";
         public const string UserAccountNotFound = "User account not found.";
 
+        public const string UserTransactionsNotFoundCode = "PAY_008";
+        public const string UserTransactionsNotFound = "Error while getting user transactions not found.";
+
+        public const string InvalidSortByFieldCode = "PAY_009";
+        public const string InvalidSortByField = "Invalid sort by field";
+
         public const string TransactionSuccess = "Transaction completed successfully";
-
-
+        
     }
 }

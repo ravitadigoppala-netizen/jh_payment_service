@@ -1,6 +1,7 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Model.Payments;
 using jh_payment_service.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace jh_payment_service.Controllers
@@ -10,6 +11,7 @@ namespace jh_payment_service.Controllers
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize]
     [Route("api/v{version:apiVersion}/payment-service/[controller]")]
     public class PaymentController : ControllerBase
     {

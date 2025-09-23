@@ -1,11 +1,13 @@
 ﻿using jh_payment_service.Model;
 using jh_payment_service.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace jh_payment_service.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize]
     [Route("api/v{version:apiVersion}/payment-service/[controller]")]
     public class ProcessPaymentController : ControllerBase
     {
@@ -73,6 +75,27 @@ namespace jh_payment_service.Controllers
             {
                 _logger.LogInformation("Check balance request received");
                 var response = await _processPaymentService.GetAccountBalance(userId);
+                return StatusCode((int)response.StatusCode, response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking account balance");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// This endpoint processes a check balance request.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("transaction/{userId}")]
+        public async Task<IActionResult> GetAllTransactions([FromRoute] long userId, [FromQuery] PageRequestModel pageRequestModel)
+        {
+            try
+            {
+                _logger.LogInformation("Get all transaction request received");
+                var response = await _processPaymentService.GetAllTransactions(userId, pageRequestModel);
                 return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
