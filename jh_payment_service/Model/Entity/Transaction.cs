@@ -10,7 +10,7 @@
         /// <summary>
         /// Represents the unique identifier for the transaction.
         /// </summary>
-        public long PaymentId { get; set; }
+        public Guid PaymentId { get; set; }
 
 
         /// <summary>
@@ -29,9 +29,13 @@
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Represents the type of transaction (Credit or Debit).
+        /// Represents the Product ID associated with the transaction, if applicable.
         /// </summary>
-        public TransactionType Type { get; set; }
+        public string? ProductId { get; set; } = null;
+
+        public PaymentStatus TrasactionStatus { get; set; } = PaymentStatus.Success;
+
+        public PaymentMethodType Type { get; set; }
 
         /// <summary>
         /// Represents the type of transaction (Credit or Debit).

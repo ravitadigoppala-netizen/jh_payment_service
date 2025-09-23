@@ -43,7 +43,7 @@ namespace jh_payment_service.Service
                 return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
             }
 
-            var response = await _httpClientService.PutAsync<CardPaymentRequest, ResponseModel>($"v1/perops/Payment/transfer/card", new CardPaymentRequest
+            var response = await _httpClientService.PostAsync<CardPaymentRequest, ResponseModel>($"v1/perops/Payment/transfer/card", new CardPaymentRequest
             {
                 SenderUserId = request.SenderUserId,
                 ReceiverUserId = request.ReceiverUserId,
@@ -100,7 +100,7 @@ namespace jh_payment_service.Service
                 return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
             }
 
-            var response = await _httpClientService.PutAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
+            var response = await _httpClientService.PostAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
             {
                 SenderUserId = request.SenderUserId,
                 ReceiverUserId = request.ReceiverUserId,

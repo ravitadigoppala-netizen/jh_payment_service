@@ -1,6 +1,8 @@
 ﻿using jh_payment_service.Constants;
 using jh_payment_service.Model;
 using jh_payment_service.Model.Payments;
+using System.Globalization;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -174,6 +176,19 @@ namespace jh_payment_service.Validators
                 return false;
             }
             return true;
+        }
+
+        public bool IsValidFieldForModel<T>(string fieldName)
+        {
+            return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                            .Any(p => p.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Method to get the property value dynamically
+        public static object GetPropertyValue(object obj, string propertyName)
+        {
+            return obj.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)
+                       ?.GetValue(obj);
         }
     }
 }

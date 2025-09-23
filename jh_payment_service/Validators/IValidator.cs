@@ -22,5 +22,7 @@ namespace jh_payment_service.Validators
         /// <param name="errorMessage"></param>
         /// <returns></returns>
         bool ValidateDebitPaymentRequest(DebitPaymentRequest debitPaymentRequest, out string errorMessage);
+
+        bool IsValidFieldForModel<T>(string fieldName);
     }
 }

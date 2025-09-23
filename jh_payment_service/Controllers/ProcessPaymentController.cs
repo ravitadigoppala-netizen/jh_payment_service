@@ -83,5 +83,26 @@ namespace jh_payment_service.Controllers
                 throw;
             }
         }
+
+        /// <summary>
+        /// This endpoint processes a check balance request.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("transaction/{userId}")]
+        public async Task<IActionResult> GetAllTransactions([FromRoute] long userId, [FromQuery] PageRequestModel pageRequestModel)
+        {
+            try
+            {
+                _logger.LogInformation("Get all transaction request received");
+                var response = await _processPaymentService.GetAllTransactions(userId, pageRequestModel);
+                return StatusCode((int)response.StatusCode, response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking account balance");
+                throw;
+            }
+        }
     }
 }

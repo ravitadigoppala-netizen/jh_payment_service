@@ -148,6 +148,30 @@ namespace jh_payment_service.Service
         }
 
         /// <summary>
+        /// GetAllTransactions method to get all transactions for user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<ResponseModel> GetAllTransactions(long userId, PageRequestModel pageRequestModel)
+        {
+            if(!string.IsNullOrWhiteSpace(pageRequestModel.SortBy) && !_validator.IsValidFieldForModel<Transaction>(pageRequestModel.SortBy))
+            {
+                return ResponseModel.BadRequest(PaymentErrorConstants.InvalidSortByField +": " + pageRequestModel.SortBy, PaymentErrorConstants.InvalidSortByFieldCode);
+            }
+
+            var transactions = await _httpClientService.GetAsync<List<Transaction>>($"v1/perops/Payment/transaction/{userId}");
+
+            if (transactions == null)
+            {
+                _logger.LogError("Transactions not found");
+                return ResponseModel.InternalServerError(PaymentErrorConstants.UserTransactionsNotFound, PaymentErrorConstants.UserTransactionsNotFoundCode);
+            }
+
+            return ResponseModel.Ok(transactions, "Transaction fetched successfully for the user");
+        }
+
+        /// <summary>
         /// Get user data from DB
         /// </summary>
         /// <param name="userId"></param>
@@ -181,7 +205,6 @@ namespace jh_payment_service.Service
                 _logger.LogError(ex, "Failed to credit");
             }
             return null;
-
         }
 
         /// <summary>
