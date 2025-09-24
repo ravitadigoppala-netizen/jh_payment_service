@@ -32,7 +32,7 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> CreditUserAccount(CreditPaymentRequest creditPaymentRequest)
         {
             // Logic to credit the user's account
-            _logger.LogInformation($"Crediting {creditPaymentRequest.Amount} to user {creditPaymentRequest.UserId}");
+            _logger.LogInformation($"Crediting {creditPaymentRequest.Amount} to user {creditPaymentRequest.UserEmail}");
             string errorMessage;
             if (!_validator.ValidateCreditPaymentRequest(creditPaymentRequest, out errorMessage))
             {
@@ -40,7 +40,7 @@ namespace jh_payment_service.Service
                 return ResponseModel.BadRequest(PaymentErrorConstants.InvalidPaymentRequest+" Error : "+ errorMessage, PaymentErrorConstants.InvalidPaymentRequestCode);
             }
 
-            var user = await GetUserData(creditPaymentRequest.UserId);
+            var user = await GetUserData(creditPaymentRequest.UserEmail);
             if (user != null)
             {
                 var paymentRequest = _mapper.Map<PaymentRequest>(creditPaymentRequest);
@@ -48,7 +48,7 @@ namespace jh_payment_service.Service
                 var response = await CreditFund(paymentRequest);
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    _logger.LogInformation($"Credited balance for user {user.UserId}");
+                    _logger.LogInformation($"Credited balance for user {user.Email}");
                     // Simulate success
                     _logger.LogInformation(PaymentErrorConstants.TransactionSuccess);
                     return ResponseModel.Created(response.ResponseBody, PaymentErrorConstants.TransactionSuccess);
@@ -73,7 +73,7 @@ namespace jh_payment_service.Service
         public async Task<ResponseModel> DebitUserAccount(DebitPaymentRequest debitPaymentRequest)
         {
             // Logic to debit the user's account
-            _logger.LogInformation($"Debiting {debitPaymentRequest.Amount} from user {debitPaymentRequest.UserId}");
+            _logger.LogInformation($"Debiting {debitPaymentRequest.Amount} from user {debitPaymentRequest.UserEmail}");
 
             string errorMessage;
             if (!_validator.ValidateDebitPaymentRequest(debitPaymentRequest, out errorMessage))
@@ -82,10 +82,10 @@ namespace jh_payment_service.Service
                 return ResponseModel.BadRequest(PaymentErrorConstants.InvalidPaymentRequest + " Error : " + errorMessage, PaymentErrorConstants.InvalidPaymentRequestCode);
             }
 
-            var user = await GetUserData(debitPaymentRequest.UserId);
+            var user = await GetUserData(debitPaymentRequest.UserEmail);
             if (user != null)
             {
-                var account = await GetUserAccount(debitPaymentRequest.UserId);
+                var account = await GetUserAccount(debitPaymentRequest.UserEmail);
                 if (account == null)
                 {
                     _logger.LogError("User account not found");
@@ -103,7 +103,7 @@ namespace jh_payment_service.Service
                 var response = await DebitFund(paymentRequest);
                 if (response != null && response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    _logger.LogInformation($"Debited balance for user {user.UserId}");
+                    _logger.LogInformation($"Debited balance for user {user.Email}");
                     // Simulate success
                     _logger.LogInformation(PaymentErrorConstants.TransactionSuccess);
                     return ResponseModel.Created(response.ResponseBody, PaymentErrorConstants.TransactionSuccess);
@@ -124,12 +124,12 @@ namespace jh_payment_service.Service
         /// <summary>
         /// GetAccountBalance method to check user account balance
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<ResponseModel> GetAccountBalance(long userId)
+        public async Task<ResponseModel> GetAccountBalance(string userEmail)
         {
-            var userAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
+            var userAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userEmail}");
 
             if (userAccount == null)
             {
@@ -150,17 +150,17 @@ namespace jh_payment_service.Service
         /// <summary>
         /// GetAllTransactions method to get all transactions for user
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<ResponseModel> GetAllTransactions(long userId, PageRequestModel pageRequestModel)
+        public async Task<ResponseModel> GetAllTransactions(string userEmail, PageRequestModel pageRequestModel)
         {
             if(!string.IsNullOrWhiteSpace(pageRequestModel.SortBy) && !_validator.IsValidFieldForModel<Transaction>(pageRequestModel.SortBy))
             {
                 return ResponseModel.BadRequest(PaymentErrorConstants.InvalidSortByField +": " + pageRequestModel.SortBy, PaymentErrorConstants.InvalidSortByFieldCode);
             }
 
-            var transactions = await _httpClientService.GetAsync<List<Transaction>>($"v1/perops/Payment/transaction/{userId}");
+            var transactions = await _httpClientService.GetAsync<List<Transaction>>($"v1/perops/Payment/transaction/{userEmail}");
 
             if (transactions == null)
             {
@@ -174,13 +174,13 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Get user data from DB
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
-        private async Task<User> GetUserData(long userId)
+        private async Task<User> GetUserData(string userEmail)
         {
             try
             {
-                return await _httpClientService.GetAsync<User>("v1/perops/user/getuser/" + userId);
+                return await _httpClientService.GetAsync<User>("v1/perops/user/getuser/" + userEmail);
             }
             catch (Exception ex)
             {
@@ -228,13 +228,13 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Get user account details from DB
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
-        private async Task<UserAccount> GetUserAccount(long userId)
+        private async Task<UserAccount> GetUserAccount(string userEmail)
         {
             try
             {
-                return await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userId}");
+                return await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{userEmail}");
             }
             catch (Exception ex)
             {

@@ -14,14 +14,14 @@
 
 
         /// <summary>
-        /// Represents the user ID of the sender in the transaction.
+        /// Represents the user email ID of the sender in the transaction.
         /// </summary>
-        public long FromUserId { get; set; }
+        public string FromUserId { get; set; }
 
         /// <summary>
-        /// Represents the user ID of the receiver in the transaction.
+        /// Represents the user email ID of the receiver in the transaction.
         /// </summary>
-        public long ToUserId { get; set; }
+        public string ToUserId { get; set; }
 
         /// <summary>
         /// Represents the amount involved in the transaction.

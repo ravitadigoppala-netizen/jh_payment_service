@@ -23,7 +23,7 @@ namespace jh_payment_service.Validators
             errorMessage = string.Empty;
             // Basic validation logic
 
-            if (paymentRequest.UserId <= 0)
+            if (string.IsNullOrWhiteSpace(paymentRequest.UserEmail))
             {
                 errorMessage = PaymentErrorConstants.InvalidUserId;
                 return false;
@@ -74,7 +74,7 @@ namespace jh_payment_service.Validators
             errorMessage = string.Empty;
             // Basic validation logic
 
-            if (paymentRequest.UserId <= 0)
+            if (string.IsNullOrWhiteSpace(paymentRequest.UserEmail))
             {
                 errorMessage = PaymentErrorConstants.InvalidUserId;
                 return false;
