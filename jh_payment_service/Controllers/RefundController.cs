@@ -21,20 +21,20 @@ namespace jh_payment_service.Controllers
         /// <summary>
         /// Process a new refund request for a user and transaction.
         /// </summary>
-        [HttpPut("refund/{userId}/{transactionId}")]
-        public async Task<ResponseModel> ProcessRefund([FromRoute] long userId, [FromRoute] string transactionId)
+        [HttpPut("refund/{userEmail}/{transactionId}")]
+        public async Task<ResponseModel> ProcessRefund([FromRoute] string userEmail, [FromRoute] string transactionId)
         {
-            return await _refundService.ProcessRefund(userId, transactionId);
+            return await _refundService.ProcessRefund(userEmail, transactionId);
         }
 
 
         /// <summary>
         /// Process a new partial refund request for a user and transaction.
         /// </summary>
-        [HttpPut("partial-refund/{userId}/{transactionId}")]
-        public async Task<ResponseModel> ProcessPartialRefund([FromRoute] long userId, [FromRoute] string transactionId)
+        [HttpPut("partial-refund/{userEmail}/{transactionId}")]
+        public async Task<ResponseModel> ProcessPartialRefund([FromRoute] string userEmail, [FromRoute] string transactionId)
         {
-            return await _refundService.ProcessPartialRefund(userId, transactionId);
+            return await _refundService.ProcessPartialRefund(userEmail, transactionId);
         }
 
 

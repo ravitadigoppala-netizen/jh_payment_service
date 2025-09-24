@@ -66,15 +66,15 @@ namespace jh_payment_service.Controllers
         /// <summary>
         /// This endpoint processes a check balance request.
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
-        [HttpGet("check-balance/{userId}")]
-        public async Task<IActionResult> CheckBalance([FromRoute] long userId)
+        [HttpGet("check-balance/{userEmail}")]
+        public async Task<IActionResult> CheckBalance([FromRoute] string userEmail)
         {
             try
             {
                 _logger.LogInformation("Check balance request received");
-                var response = await _processPaymentService.GetAccountBalance(userId);
+                var response = await _processPaymentService.GetAccountBalance(userEmail);
                 return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)
@@ -87,15 +87,15 @@ namespace jh_payment_service.Controllers
         /// <summary>
         /// This endpoint processes a check balance request.
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userEmail"></param>
         /// <returns></returns>
-        [HttpGet("transaction/{userId}")]
-        public async Task<IActionResult> GetAllTransactions([FromRoute] long userId, [FromQuery] PageRequestModel pageRequestModel)
+        [HttpGet("transaction/{userEmail}")]
+        public async Task<IActionResult> GetAllTransactions([FromRoute] string userEmail, [FromQuery] PageRequestModel pageRequestModel)
         {
             try
             {
                 _logger.LogInformation("Get all transaction request received");
-                var response = await _processPaymentService.GetAllTransactions(userId, pageRequestModel);
+                var response = await _processPaymentService.GetAllTransactions(userEmail, pageRequestModel);
                 return StatusCode((int)response.StatusCode, response);
             }
             catch (Exception ex)

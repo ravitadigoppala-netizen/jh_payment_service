@@ -8,7 +8,7 @@
         /// <summary>
         /// Represents the unique identifier for the user.
         /// </summary>
-        public long UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Represents the full name of the user.

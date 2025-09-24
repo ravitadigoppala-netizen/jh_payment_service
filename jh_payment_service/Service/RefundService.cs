@@ -24,7 +24,7 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Processes a new refund request for a specific user and transaction.
         /// </summary>
-        public async Task<ResponseModel> ProcessRefund(long userId, string transactionId)
+        public async Task<ResponseModel> ProcessRefund(string userEmail, string transactionId)
         {
             if (string.IsNullOrEmpty(transactionId))
             {
@@ -34,7 +34,7 @@ namespace jh_payment_service.Service
             Guid.TryParse(transactionId, out Guid transactinGuid);
 
             // Build API URL using class-level fields
-            var apiUrl = "v1/perops/Payment/refund" + $"/{userId}/{transactinGuid}";
+            var apiUrl = "v1/perops/Payment/refund" + $"/{userEmail}/{transactinGuid}";
 
             // Send request
             var response = await _httpClientService.GetAsync<string>(apiUrl);
@@ -48,7 +48,7 @@ namespace jh_payment_service.Service
         /// <summary>
         /// Processes a new partial refund request for a specific user and transaction.
         /// </summary>
-        public async Task<ResponseModel> ProcessPartialRefund(long userId, string transactionId)
+        public async Task<ResponseModel> ProcessPartialRefund(string userEmail, string transactionId)
         {
             if (string.IsNullOrEmpty(transactionId))
             {
@@ -58,7 +58,7 @@ namespace jh_payment_service.Service
             Guid.TryParse(transactionId, out Guid transactinGuid);
 
             // Build API URL using class-level fields
-            var apiUrl = "v1/perops/Payment/partial-refund" + $"/{userId}/{transactinGuid}";
+            var apiUrl = "v1/perops/Payment/partial-refund" + $"/{userEmail}/{transactinGuid}";
 
             // Send request
             var response = await _httpClientService.GetAsync<string>(apiUrl);

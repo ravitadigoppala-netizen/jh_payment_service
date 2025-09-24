@@ -25,13 +25,13 @@ namespace jh_payment_service.Service
         /// <summary>
         /// GetAccountBalance
         /// </summary>
-        /// <param name="userId"></param>
-        Task<ResponseModel> GetAccountBalance(long userId);
+        /// <param name="userEmail"></param>
+        Task<ResponseModel> GetAccountBalance(string userEmail);
 
         /// <summary>
         /// Get All Transactions for User
         /// </summary>
-        /// <param name="userId"></param>
-        Task<ResponseModel> GetAllTransactions(long userId, PageRequestModel pageRequestModel);
+        /// <param name="userEmail"></param>
+        Task<ResponseModel> GetAllTransactions(string userEmail, PageRequestModel pageRequestModel);
     }
 }

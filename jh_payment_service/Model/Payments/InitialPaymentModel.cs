@@ -3,14 +3,14 @@
     public class InitialPaymentModel
     {
         /// <summary>
-        /// Represents the unique identifier of the user sending the payment.
+        /// Represents the email of the user sending the payment.
         /// </summary>
-        public long SenderUserId { get; set; }
+        public string SenderUserId { get; set; }
 
         /// <summary>
-        /// Represents the unique identifier of the user receiving the payment.
+        /// Represents the email of the user receiving the payment.
         /// </summary>
-        public long ReceiverUserId { get; set; }
+        public string ReceiverUserId { get; set; }
 
         /// <summary>
         /// Represents the amount to be paid.

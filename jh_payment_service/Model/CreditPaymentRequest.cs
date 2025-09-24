@@ -10,7 +10,7 @@ namespace jh_payment_service.Model
         /// <summary>
         /// Represents the ID of the user making the credit payment request.
         /// </summary>
-        public long UserId { get; set; }
+        public string UserEmail { get; set; }
 
         /// <summary>
         /// Represents the amount to be paid.
