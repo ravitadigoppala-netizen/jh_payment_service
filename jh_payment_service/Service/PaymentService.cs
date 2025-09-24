@@ -35,12 +35,17 @@ namespace jh_payment_service.Service
                 _logger.LogError("Invalid payment request: " + errorMessage);
                 return ResponseModel.BadRequest("Invalid payment request: " + errorMessage);
             }
+            var sender = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.SenderUserId}");
 
+            if (sender == null)
+            {
+                return ResponseModel.BadRequest($"Sender with id: {request.SenderUserId} not found", "NOTIF001 ");
+            }
             var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
 
             if (senderAccount.Balance < request.Amount)
             {
-                return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
+                return ResponseModel.BadRequest("Insufficient balance", "PAY001 ");
             }
 
             var response = await _httpClientService.PostAsync<CardPaymentRequest, ResponseModel>($"v1/perops/Payment/transfer/card", new CardPaymentRequest
@@ -83,13 +88,13 @@ namespace jh_payment_service.Service
 
             if (sender == null)
             {
-                return ErrorResponseModel.Fail($"Sender with id: {request.SenderUserId} not found", "NOTIF001 ");
+                return ResponseModel.BadRequest($"Sender with id: {request.SenderUserId} not found", "NOTIF001 ");
             }
 
             var receiver = await _httpClientService.GetAsync<User>($"v1/perops/user/getuser/{request.ReceiverUserId}");
             if (receiver == null)
             {
-                return ErrorResponseModel.Fail($"Receiver with id: {request.ReceiverUserId} not found", "NOTIF001 ");
+                return ResponseModel.BadRequest($"Receiver with id: {request.ReceiverUserId} not found", "NOTIF001 ");
             }
 
             var senderAccount = await _httpClientService.GetAsync<UserAccount>($"v1/perops/Payment/checkbalance/{request.SenderUserId}");
@@ -97,7 +102,7 @@ namespace jh_payment_service.Service
 
             if (senderAccount.Balance < request.Amount)
             {
-                return ErrorResponseModel.Fail("Insufficient balance", "PAY001 ");
+                return ResponseModel.BadRequest("Insufficient balance", "PAY001 ");
             }
 
             var response = await _httpClientService.PostAsync<PaymentRequest, ResponseModel>($"v1/perops/Payment/transfer", new PaymentRequest
